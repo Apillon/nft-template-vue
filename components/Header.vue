@@ -7,7 +7,11 @@
       <a href="https://apillon.io/" class="builders" target="_blank"> Build with Apillon </a>
     </div>
     <div class="header-r">
-      <img src="images/header.svg" />
+      <img :src="HeaderSVG" />
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import HeaderSVG from '~/assets/images/header.svg';
+</script>
