@@ -45,8 +45,8 @@ const props = defineProps({
   address: { type: String, default: '' },
 });
 
-const totalSupply = ref<number>(props.collection.totalSupply.toNumber());
-const maxSupply = ref<number>(props.collection.maxSupply.toNumber());
+const totalSupply = ref<number>(props.collection.totalSupply);
+const maxSupply = ref<number>(props.collection.maxSupply);
 const dropStartDate = ref<Date>(new Date(props.collection.dropStart.toNumber() * 1000));
 const dropStartTimestamp = ref<number>(props.collection.dropStart.toNumber() * 1000);
 const price = ref<string>(ethers.utils.formatEther(props.collection.price));

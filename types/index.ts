@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { PropType } from 'nuxt/dist/app/compat/capi';
 
 export {};
@@ -12,8 +12,14 @@ declare global {
   interface Window {
     ethereum: any;
   }
-
+  interface NftResponse {
+    name: string;
+    description: string;
+    image: string;
+  }
   interface Nft {
+    id: number;
+    key: number;
     name: string;
     description: string;
     image: string;
@@ -31,5 +37,17 @@ declare global {
     soulbound: Boolean;
     symbol: String;
     totalSupply: BigNumber;
+  }
+  interface Child {
+    contractAddress: string;
+    tokenId: BigNumber;
+  }
+
+  /** State */
+  type Provider = ethers.providers.Web3Provider;
+  type Contract = ethers.Contract;
+  interface StateInterface {
+    provider: Provider | null;
+    nftContract: Contract | null;
   }
 }
