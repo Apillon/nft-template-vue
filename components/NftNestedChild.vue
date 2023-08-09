@@ -1,5 +1,8 @@
 <template>
-  <div v-if="metadata" class="box">
+  <div v-if="loading" class="relative">
+    <Spinner />
+  </div>
+  <div v-else-if="metadata && metadata.name" class="box">
     <img :src="metadata.image" :alt="metadata.name" />
     <div class="box-content">
       <h3>{{ metadata.name || `#${metadata.id}` }}</h3>
@@ -24,7 +27,7 @@ const props = defineProps({
   childNft: { type: Object as VuePropType<Child>, required: true },
 });
 
-const { walletAddress, getNftContract } = useNft();
+const { state, getNftContract } = useNft();
 const { transferChild } = useNestable();
 
 const metadata = ref<Nft>({} as Nft);
@@ -32,21 +35,22 @@ const loading = ref<boolean>(true);
 const loadingTransfer = ref<boolean>(false);
 
 onMounted(async () => {
-  const childNftContract = getNftContract(props.childNft.contractAddress);
-  const nftUrl = await childNftContract.tokenURI(props.childNft.tokenId.toBigInt());
+  try {
+    const childNftContract = getNftContract(props.childNft.contractAddress);
+    const nftUrl = await childNftContract.tokenURI(props.childNft.tokenId.toBigInt());
 
-  const nftData = await fetch(nftUrl).then(response => {
-    return response.json();
-  });
+    const nftData = await fetch(nftUrl).then(response => {
+      return response.json();
+    });
 
-  metadata.value = {
-    id: props.childNft.tokenId.toNumber(),
-    key: props.parentId,
-    name: nftData.name,
-    description: nftData.description,
-    image: nftData.image,
-  };
-
+    metadata.value = {
+      id: props.childNft.tokenId.toNumber(),
+      key: props.parentId,
+      name: nftData.name,
+      description: nftData.description,
+      image: nftData.image,
+    };
+  } catch (error) {}
   loading.value = false;
 });
 
@@ -55,7 +59,7 @@ async function transferChildWrapper(contractAddress: string, childId: BigNumber)
 
   const status = await transferChild(
     props.parentId,
-    walletAddress.value,
+    state.walletAddress,
     0,
     0,
     contractAddress,
@@ -63,7 +67,11 @@ async function transferChildWrapper(contractAddress: string, childId: BigNumber)
     false,
     '0x'
   );
-  // transactionStatus('Token could not be transferred! Wrong token address or token ID.');
+  if (status) {
+    useNuxtApp().$toast.success('Child has been transferred');
+  } else {
+    useNuxtApp().$toast.error('Token could not be transferred! Wrong token address or token ID.');
+  }
 
   loadingTransfer.value = false;
 }

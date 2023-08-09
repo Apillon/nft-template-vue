@@ -1,30 +1,35 @@
 import { BigNumber, ethers } from 'ethers';
 import nftAbi from '~~/lib/nftAbi';
 
+const config = useRuntimeConfig();
+
+const state = reactive<StateInterface>({
+  chainId: config.public.CHAIN_ID,
+  nftAddress: config.public.NFT_ADDRESS,
+  currentChain: '',
+  collectionInfo: null,
+  myNFTs: [],
+  nfts: [] as Nft[],
+  filterByAddress: false,
+  isCollectionNestable: false,
+  loading: false,
+  loadingNfts: false,
+  loadingMyNfts: false,
+  walletAddress: '',
+});
+
 export default function useNft() {
-  const config = useRuntimeConfig();
-  const CHAIN_ID = config.public.CHAIN_ID;
-  const NFT_ADDRESS = config.public.NFT_ADDRESS;
-
-  const loading = ref<boolean>(false);
-  const loadingNfts = ref<boolean>(false);
-  const loadingMyNfts = ref<boolean>(false);
-
-  const walletAddress = ref<string>('');
-  const currentChain = ref<string>('');
-  const collectionInfo = ref<CollectionInfo>();
-
-  const nfts = ref<Nft[]>([]);
-  const filterByAddress = ref<boolean>(false);
-  const isCollectionNestable = ref<boolean>(false);
-
   function getProvider(): Provider {
     const { ethereum } = window;
     return new ethers.providers.Web3Provider(ethereum);
   }
 
   function getNftContract(tokenAddress?: string): Contract {
-    const nftContract = new ethers.Contract(tokenAddress || NFT_ADDRESS, nftAbi, getProvider());
+    const nftContract = new ethers.Contract(
+      tokenAddress || state.nftAddress,
+      nftAbi,
+      getProvider()
+    );
     return nftContract;
   }
 
@@ -35,23 +40,23 @@ export default function useNft() {
       useNuxtApp().$toast.error(metamaskNotSupportedMessage());
       return;
     }
-    loading.value = true;
+    state.loading = true;
 
     let provider = getProvider();
 
-    currentChain.value = await getCurrentChain();
-    if (currentChain.value !== CHAIN_ID) {
+    state.currentChain = await getCurrentChain();
+    if (state.currentChain !== state.chainId) {
       try {
-        await switchChain(CHAIN_ID);
+        await switchChain(state.chainId);
 
         provider = getProvider();
-        currentChain.value = await getCurrentChain();
+        state.currentChain = await getCurrentChain();
       } catch (e) {
         console.error(e);
         useNuxtApp().$toast.error('Error connecting to metamask');
 
         try {
-          await addChain(CHAIN_ID);
+          await addChain(state.chainId);
         } catch (e) {
           console.error(e);
           useNuxtApp().$toast.error('' + e);
@@ -61,28 +66,30 @@ export default function useNft() {
     if (!provider) {
       console.error('Missing provider');
       useNuxtApp().$toast.error('Missing provider');
-      loading.value = false;
+      state.loading = false;
       return;
     }
 
     /** Check if collection is Nestable */
-    isCollectionNestable.value = await isTokenNestable(getNftContract());
+    state.isCollectionNestable = await isTokenNestable(getNftContract());
 
     /** Wallet address */
     await ethereum.request({ method: 'eth_requestAccounts' });
-    walletAddress.value = await provider.getSigner().getAddress();
+    state.walletAddress = await provider.getSigner().getAddress();
 
     try {
-      collectionInfo.value = await getCollectionInfo();
+      state.collectionInfo = await getCollectionInfo();
     } catch (e) {
       console.error(e);
       useNuxtApp().$toast.error('Invalid NFT collection');
-      loading.value = false;
+      state.loading = false;
       return;
     }
 
+    state.myNFTs = await getMyNftIDs();
+
     await loadAllNFTs();
-    loading.value = false;
+    state.loading = false;
   }
 
   async function getCollectionInfo(): Promise<CollectionInfo> {
@@ -107,28 +114,28 @@ export default function useNft() {
   }
 
   async function loadAllNFTs() {
-    loadingNfts.value = true;
-    filterByAddress.value = false;
+    state.loadingNfts = true;
+    state.filterByAddress = false;
 
-    if (collectionInfo.value) {
-      await fetchNFTs(collectionInfo.value.totalSupply);
+    if (state.collectionInfo) {
+      await fetchNFTs(state.collectionInfo.totalSupply);
     }
-    loadingNfts.value = false;
+    state.loadingNfts = false;
   }
 
   async function loadMyNFTs() {
-    loadingMyNfts.value = true;
-    filterByAddress.value = true;
+    state.loadingMyNfts = true;
+    state.filterByAddress = true;
 
     const nftContract = getNftContract();
-    const balance = nftContract ? await nftContract.balanceOf(walletAddress.value) : null;
+    const balance = nftContract ? await nftContract.balanceOf(state.walletAddress) : null;
 
-    await fetchNFTs(balance, walletAddress.value);
-    loadingMyNfts.value = false;
+    await fetchNFTs(balance, state.walletAddress);
+    state.loadingMyNfts = false;
   }
 
   async function fetchNFTs(balance: BigNumber | null | undefined, address = '') {
-    nfts.value = [];
+    state.nfts = [];
     const nftContract = getNftContract();
     if (!nftContract || !balance || balance.toNumber() === 0) {
       return;
@@ -144,7 +151,7 @@ export default function useNft() {
           return response.json();
         });
         if (metadata && metadata.name) {
-          nfts.value.push({
+          state.nfts.push({
             key: i,
             id: id.toNumber(),
             ...metadata,
@@ -166,16 +173,24 @@ export default function useNft() {
     }
   }
 
-  return {
-    collectionInfo: computed(() => collectionInfo.value),
-    filterByAddress: computed(() => filterByAddress.value),
-    isCollectionNestable: computed(() => isCollectionNestable.value),
-    loading: computed(() => loading.value),
-    loadingNfts: computed(() => loadingNfts.value),
-    loadingMyNfts: computed(() => loadingMyNfts.value),
-    nfts: computed(() => nfts.value),
-    walletAddress: computed(() => walletAddress.value),
+  async function getMyNftIDs(tokenAddress?: string): Promise<Array<number>> {
+    const nftIDs = [];
+    try {
+      const contract = getNftContract(tokenAddress);
+      const balance = await contract.balanceOf(state.walletAddress);
 
+      for (let i = 0; i < balance.toBigInt(); i++) {
+        const tokenId = await contract.tokenOfOwnerByIndex(state.walletAddress, i);
+        nftIDs.push(tokenId.toNumber());
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    return nftIDs;
+  }
+
+  return {
+    state: readonly(state),
     connectWallet,
     getProvider,
     getNftContract,

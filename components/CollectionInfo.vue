@@ -16,7 +16,7 @@
       <b> Supply: </b>
       {{ totalSupply }}/{{ maxSupply }}
     </div>
-    <div v-if="collection.drop">
+    <div v-if="collection.drop" class="drop">
       <div>
         <b> Price: </b>
         {{ price }}
@@ -31,6 +31,7 @@
         </div>
       </div>
 
+      <MintNestable v-else-if="state.isCollectionNestable" />
       <Mint v-else :price="collection.price" :provider="provider" :address="address" />
     </div>
   </div>
@@ -44,6 +45,7 @@ const props = defineProps({
   provider: { type: Object as VuePropType<providers.Web3Provider>, required: true },
   address: { type: String, default: '' },
 });
+const { state } = useNft();
 
 const totalSupply = ref<number>(props.collection.totalSupply);
 const maxSupply = ref<number>(props.collection.maxSupply);

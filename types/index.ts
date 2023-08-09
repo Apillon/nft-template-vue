@@ -47,7 +47,17 @@ declare global {
   type Provider = ethers.providers.Web3Provider;
   type Contract = ethers.Contract;
   interface StateInterface {
-    provider: Provider | null;
-    nftContract: Contract | null;
+    chainId: string;
+    nftAddress: string;
+    currentChain: string;
+    collectionInfo: CollectionInfo | null;
+    myNFTs: Array<number>;
+    nfts: Nft[];
+    filterByAddress: boolean;
+    isCollectionNestable: boolean;
+    loading: boolean;
+    loadingNfts: boolean;
+    loadingMyNfts: boolean;
+    walletAddress: string;
   }
 }

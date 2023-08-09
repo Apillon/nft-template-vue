@@ -1,7 +1,7 @@
 // Moonbase
 const config: ConfigInterface = {
   CHAIN_ID: '0x507',
-  NFT_ADDRESS: '0x4a32f72BDf8596D44E267733cFD076ADfcEaE208',
+  NFT_ADDRESS: '',
 };
 // Moonbeam
 // const config: ConfigInterface = {

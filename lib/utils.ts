@@ -101,3 +101,18 @@ export const switchChain = async (chainId: string) => {
     params: [{ chainId }], // chainId must be in HEX with 0x in front
   });
 };
+
+export function checkInputAddress(address?: string) {
+  if (!address) {
+    useNuxtApp().$toast.error('Enter contract address!');
+    return false;
+  }
+  return true;
+}
+export function checkInputToken(token?: number | string) {
+  if (token && Number(token) >= 0) {
+    return true;
+  }
+  useNuxtApp().$toast.error('Enter token ID!');
+  return false;
+}

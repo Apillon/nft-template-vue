@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 export default function useNestable() {
-  const { walletAddress, getNftContract, getProvider, isTokenNestable } = useNft();
+  const { state, getNftContract, getProvider, isTokenNestable } = useNft();
 
   /** Nestable NFT */
   async function childrenOf(parentId: number, tokenAddress?: string): Promise<Child[]> {
@@ -25,25 +25,31 @@ export default function useNestable() {
   }
 
   /** Transactions */
-  async function childMint(tokenAddress: string, quantity: number) {
+  async function childMint(tokenAddress: string, quantity: number): Promise<boolean> {
     const childNftContract = getNftContract(tokenAddress);
     const isNestable = await isTokenNestable(childNftContract);
     if (!isNestable) {
       console.error('Child token is not nestable');
-      return;
+      return false;
     }
     const price = await getNftContract().pricePerMint();
     const value = price.mul(ethers.BigNumber.from(quantity));
     try {
       await childNftContract
         .connect(getProvider().getSigner())
-        .mint(walletAddress, quantity, { value });
+        .mint(state.walletAddress, quantity, { value });
+      return true;
     } catch (e) {
       console.log(e);
+      return false;
     }
   }
 
-  async function childNestMint(tokenAddress: string, quantity: number, destinationId: number) {
+  async function childNestMint(
+    tokenAddress: string,
+    quantity: number,
+    destinationId: number
+  ): Promise<boolean> {
     const childNftContract = getNftContract(tokenAddress);
     const isNestable = await isTokenNestable(childNftContract);
     if (!isNestable) {
