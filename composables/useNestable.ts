@@ -35,9 +35,13 @@ export default function useNestable() {
     const price = await getNftContract().pricePerMint();
     const value = price.mul(ethers.BigNumber.from(quantity));
     try {
+      const gasLimit = await childNftContract
+        .connect(getProvider().getSigner())
+        .estimateGas.mint(state.walletAddress, quantity, { value });
+
       await childNftContract
         .connect(getProvider().getSigner())
-        .mint(state.walletAddress, quantity, { value });
+        .mint(state.walletAddress, quantity, { value, gasLimit: gasLimit.mul(11).div(10) });
       return true;
     } catch (e) {
       console.log(e);
@@ -118,7 +122,7 @@ export default function useNestable() {
     try {
       await childNftContract
         .connect(getProvider().getSigner())
-        .nestTransferFrom(walletAddress, toAddress, tokenId, destinationId, data);
+        .nestTransferFrom(state.walletAddress, toAddress, tokenId, destinationId, data);
       return true;
     } catch (e) {
       console.log(e);

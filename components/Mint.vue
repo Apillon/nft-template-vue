@@ -25,11 +25,21 @@ async function mint() {
   loading.value = true;
 
   try {
-    const nft = new ethers.Contract(config.public.NFT_ADDRESS, nftAbi, props.provider).connect(
-      props.provider.getSigner()
-    );
-    const value = props.price.mul(ethers.BigNumber.from(amount.value)); // 0.1
-    await nft.mint(props.address, amount.value, { value });
+    const nftContract = new ethers.Contract(
+      config.public.NFT_ADDRESS,
+      nftAbi,
+      props.provider
+    ).connect(props.provider.getSigner());
+    const value = props.price.mul(ethers.BigNumber.from(amount.value));
+
+    const gasLimit = await nftContract
+      .connect(props.provider.getSigner())
+      .estimateGas.mint(props.address, amount, { value });
+
+    await nftContract.mint(props.address, amount.value, {
+      value,
+      gasLimit: gasLimit.mul(11).div(10),
+    });
   } catch (e) {
     console.error(e);
   }
