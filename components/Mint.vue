@@ -10,6 +10,7 @@
 
 <script lang="ts" setup>
 import { BigNumber, ethers, providers } from 'ethers';
+import { toast } from 'vue3-toastify';
 
 const props = defineProps({
   provider: { type: Object as VuePropType<providers.Web3Provider>, required: true },
@@ -24,18 +25,32 @@ const amount = ref<number>(1);
 async function mint() {
   loading.value = true;
 
+  if (!checkInputAmount(amount.value)) {
+    console.log('Wrong amount number');
+    return;
+  }
+
   try {
-    const nft = new ethers.Contract(config.public.NFT_ADDRESS, nftAbi, props.provider).connect(
-      props.provider.getSigner()
-    );
-    const value = props.price.mul(ethers.BigNumber.from(amount.value)); // 0.1
-    await nft.mint(props.address, amount.value, { value });
+    const nftContract = new ethers.Contract(config.public.NFT_ADDRESS, nftAbi, props.provider);
+    const value = props.price.mul(ethers.BigNumber.from(amount.value));
+
+    const gasLimit = await nftContract
+      .connect(props.provider.getSigner())
+      .estimateGas.mint(props.address, amount, { value });
+
+    const mintData = { value, gasLimit: gasLimit.mul(11).div(10) };
+    await nftContract
+      .connect(props.provider.getSigner())
+      .mint(props.address, amount.value, mintData);
+
+    toast('Token is being minted', { type: 'success' });
   } catch (e) {
     console.error(e);
   }
 
   setTimeout(() => {
     loading.value = false;
+    transactionError('Unsuccessful mint', e);
   }, 300);
 }
 

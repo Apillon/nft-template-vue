@@ -19,12 +19,11 @@ dist/
 # Package files
 *.jar
 
-# Maven
-target/
-dist/
-
 # JetBrains IDE
 .idea/
+
+# VSCode IDE
+.vscode/
 
 # Unit test reports
 TEST*.xml
