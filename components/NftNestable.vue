@@ -38,7 +38,14 @@
         </div>
         <div class="btn-group">
           <div class="field">
-            <label :for="`addressNestMint$_${nft.id}`">Contract Address:</label>
+            <label :for="`addressNestMint_${nft.id}`">
+              <span>Contract Address</span>
+              <Tooltip
+                class="large"
+                tooltip-text="Enter collection address from where you want to mint NFT and transfer it to this NFT. Initial address is from this collection."
+              />
+            </label>
+
             <input
               :id="`addressNestMint_${nft.id}`"
               v-model="addressNestMint"
@@ -46,11 +53,17 @@
               @change="handleChangeNestMint"
             />
           </div>
-          <Btn :loading="loadingNestMint" @click="childNestMintWrapper()"> Nest Mint </Btn>
+          <Btn :loading="loadingNestMint" @click="childNestMintWrapper()"> Mint Child </Btn>
         </div>
         <div class="btn-group">
           <div class="field">
-            <label :for="`addressTransferFrom_${nft.id}`">Contract Address:</label>
+            <label :for="`addressTransferFrom_${nft.id}`">
+              <span>Contract Address</span>
+              <Tooltip
+                class="large"
+                tooltip-text="Enter collection address from where you want to transfer NFT. Initial address is from this collection."
+              />
+            </label>
             <input
               :id="`addressTransferFrom_${nft.id}`"
               v-model="addressTransferFrom"
@@ -59,7 +72,13 @@
             />
           </div>
           <div class="field">
-            <label :for="`tokenTransferFrom_${nft.id}`">Token ID:</label>
+            <label :for="`tokenTransferFrom_${nft.id}`">
+              <span>Token ID</span>
+              <Tooltip
+                class="large"
+                tooltip-text="With Token ID you choose which token you will transfer."
+              />
+            </label>
             <input
               :id="`tokenTransferFrom_${nft.id}`"
               v-model="tokenTransferFrom"
@@ -98,6 +117,7 @@ const props = defineProps({
   nft: { type: Object as VuePropType<Nft>, required: true },
 });
 
+const config = useRuntimeConfig();
 const { state } = useNft();
 const {
   childrenOf,
@@ -113,8 +133,8 @@ const loadingReject = ref<boolean>(false);
 const loadingNestMint = ref<boolean>(false);
 const loadingTransferFrom = ref<boolean>(false);
 
-const addressNestMint = ref<string>('');
-const addressTransferFrom = ref<string>('');
+const addressNestMint = ref<string>(config.public.NFT_ADDRESS);
+const addressTransferFrom = ref<string>(config.public.NFT_ADDRESS);
 const tokenTransferFrom = ref<number>(0);
 
 // check if nestable NFT has any children or pending children
@@ -140,41 +160,21 @@ const hasPendingChildren = computed(() => {
 
 async function acceptChildWrapper(childAddress: string, childId: BigNumber) {
   loadingAccept.value = true;
-
-  const status = await acceptChild(props.nft.id, 0, childAddress, childId.toNumber());
-  if (status) {
-    useNuxtApp().$toast.success('Token has been accepted');
-  } else {
-    useNuxtApp().$toast.error('Token could not be accepted!');
-  }
-
+  await acceptChild(props.nft.id, 0, childAddress, childId.toNumber());
   loadingAccept.value = false;
 }
 
 async function rejectAllChildrenWrapper(parentId: number, pendingChildrenNum = 1) {
   loadingReject.value = true;
-
-  const status = await rejectAllChildren(parentId, pendingChildrenNum);
-  if (status) {
-    useNuxtApp().$toast.success('Tokens has been rejected');
-  } else {
-    useNuxtApp().$toast.error('Tokens could not be rejected!');
-  }
-
+  await rejectAllChildren(parentId, pendingChildrenNum);
   loadingReject.value = false;
 }
 
 async function childNestMintWrapper() {
   loadingNestMint.value = true;
-
-  const address = addressNestMint.value || state.nftAddress;
-  const status = await childNestMint(address, 1, props.nft.id);
-  if (status) {
-    useNuxtApp().$toast.success('Token has been minted');
-  } else {
-    useNuxtApp().$toast.error('Token could not be minted! Check contract address.');
+  if (checkInputAddress(addressNestMint.value)) {
+    await childNestMint(addressNestMint.value, 1, props.nft.id);
   }
-
   loadingNestMint.value = false;
 }
 
@@ -182,20 +182,14 @@ async function nestTransferFromWrapper() {
   loadingTransferFrom.value = true;
 
   if (checkInputAddress(addressTransferFrom.value) && checkInputToken(tokenTransferFrom.value)) {
-    const status = await nestTransferFrom(
+    await nestTransferFrom(
       addressTransferFrom.value,
       state.nftAddress,
       tokenTransferFrom.value,
       props.nft.id,
       '0x'
     );
-    if (status) {
-      useNuxtApp().$toast.success('Token has been transferred');
-    } else {
-      useNuxtApp().$toast.error('Token could not be transferred! Wrong token address or token ID.');
-    }
   }
-
   loadingTransferFrom.value = false;
 }
 

@@ -95,6 +95,7 @@ export default function useNft() {
   async function getCollectionInfo(): Promise<CollectionInfo> {
     const nftContract = getNftContract();
     return {
+      address: nftContract.address,
       name: await nftContract.name(),
       symbol: await nftContract.symbol(),
       maxSupply: await nftContract.maxSupply(),
@@ -104,12 +105,9 @@ export default function useNft() {
       drop: await nftContract.isDrop(),
       dropStart: await nftContract.dropStart(),
       reserve: await nftContract.reserve(),
-      price: BigNumber.from('4'),
-      royaltiesFees: BigNumber.from('42'),
-      royaltiesAddress: '',
-      // price: await nftContract.price(),
-      // royaltiesFees: await nftContract.getRoyaltyPercentage(),
-      // royaltiesAddress: await nftContract.getRoyaltyRecipient(),
+      price: await nftContract.pricePerMint(),
+      royaltiesFees: await nftContract.getRoyaltyPercentage(),
+      royaltiesAddress: await nftContract.getRoyaltyRecipient(),
     };
   }
 
@@ -185,6 +183,10 @@ export default function useNft() {
       }
     } catch (error) {
       console.log(error);
+      transactionError(
+        'Token could not be minted! Wrong address or all tokens has already been minted.',
+        error
+      );
     }
     return nftIDs;
   }

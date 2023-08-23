@@ -25,12 +25,12 @@ export default function useNestable() {
   }
 
   /** Transactions */
-  async function childMint(tokenAddress: string, quantity: number): Promise<boolean> {
+  async function childMint(tokenAddress: string, quantity: number) {
     const childNftContract = getNftContract(tokenAddress);
     const isNestable = await isTokenNestable(childNftContract);
     if (!isNestable) {
-      console.error('Child token is not nestable');
-      return false;
+      useNuxtApp().$toast.warning('Child token is not nestable');
+      return;
     }
     const price = await getNftContract().pricePerMint();
     const value = price.mul(ethers.BigNumber.from(quantity));
@@ -42,36 +42,51 @@ export default function useNestable() {
       await childNftContract
         .connect(getProvider().getSigner())
         .mint(state.walletAddress, quantity, { value, gasLimit: gasLimit.mul(11).div(10) });
-      return true;
+
+      useNuxtApp().$toast.success('Token is being minted');
     } catch (e) {
       console.log(e);
-      return false;
+      transactionError(
+        'Token could not be minted! Wrong address or all tokens has already been minted.',
+        e
+      );
     }
   }
 
-  async function childNestMint(
-    tokenAddress: string,
-    quantity: number,
-    destinationId: number
-  ): Promise<boolean> {
+  async function childNestMint(tokenAddress: string, quantity: number, destinationId: number) {
+    if (!checkInputAddress(tokenAddress)) {
+      console.log('Missing input data');
+      return;
+    }
     const childNftContract = getNftContract(tokenAddress);
     const isNestable = await isTokenNestable(childNftContract);
     if (!isNestable) {
       console.error('Child token is not nestable');
-      return false;
+      return;
     }
     const nftContract = getNftContract();
-    const price = await nftContract.pricePerMint();
+    const price = await childNftContract.pricePerMint();
     const value = price.mul(ethers.BigNumber.from(quantity));
     try {
+      const gasLimit = await childNftContract
+        .connect(getProvider().getSigner())
+        .estimateGas.nestMint(nftContract.address, quantity, destinationId, { value });
+
       await childNftContract
         .connect(getProvider().getSigner())
-        .nestMint(nftContract.address, quantity, destinationId, { value });
-      return true;
+        .nestMint(nftContract.address, quantity, destinationId, {
+          value,
+          gasLimit: gasLimit.mul(11).div(10),
+        });
+
+      useNuxtApp().$toast.success('Token is being minted');
     } catch (e) {
       console.log(e);
+      transactionError(
+        'Token could not be minted! Wrong address or all tokens has already been minted.',
+        e
+      );
     }
-    return false;
   }
 
   async function acceptChild(
@@ -85,10 +100,11 @@ export default function useNestable() {
       await nftContract
         .connect(getProvider().getSigner())
         .acceptChild(parentId, childIndex, childAddress, childId);
-      return true;
+
+      useNuxtApp().$toast.success('Token is being accepted');
     } catch (e) {
       console.log(e);
-      return false;
+      transactionError('Token could not be accepted!', e);
     }
   }
 
@@ -98,10 +114,11 @@ export default function useNestable() {
       await nftContract
         .connect(getProvider().getSigner())
         .rejectAllChildren(parentId, maxRejections);
-      return true;
+
+      useNuxtApp().$toast.success('Tokens is being rejected');
     } catch (e) {
       console.log(e);
-      return false;
+      transactionError('Tokens could not be rejected!', e);
     }
   }
 
@@ -123,10 +140,11 @@ export default function useNestable() {
       await childNftContract
         .connect(getProvider().getSigner())
         .nestTransferFrom(state.walletAddress, toAddress, tokenId, destinationId, data);
-      return true;
+
+      useNuxtApp().$toast.success('Token is being transferred');
     } catch (e) {
       console.log(e);
-      return false;
+      transactionError('Token could not be transferred! Wrong token address or token ID.', e);
     }
   }
 
@@ -154,10 +172,11 @@ export default function useNestable() {
           isPending,
           data
         );
-      return true;
+
+      useNuxtApp().$toast.success('Child is being transferred');
     } catch (e) {
       console.log(e);
-      return false;
+      transactionError('Token could not be transferred! Wrong token address or token ID.', e);
     }
   }
 

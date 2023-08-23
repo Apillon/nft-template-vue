@@ -1,8 +1,12 @@
 import { BigNumber, ethers } from 'ethers';
 import { PropType } from 'nuxt/dist/app/compat/capi';
 
-export {};
-
+/** NFT Chains */
+export enum Chains {
+  MOONBEAM = '0x504',
+  MOONBASE = '0x507',
+  ASTAR = '0x250',
+}
 declare global {
   type VuePropType<T> = PropType<T>;
 
@@ -25,6 +29,7 @@ declare global {
     image: string;
   }
   interface CollectionInfo {
+    address: String;
     drop: Boolean;
     dropStart: BigNumber;
     maxSupply: BigNumber;

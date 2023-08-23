@@ -1,6 +1,13 @@
 <template>
   <div id="collection" class="collection-info">
     <div>
+      <b> Collection address: </b>
+      <a :href="collectionLink()" target="_blank" rel="noreferrer">
+        {{ collection.address }}
+        <img :src="LinkSVG" width="10" height="10" />
+      </a>
+    </div>
+    <div>
       <b> Name: </b>
       {{ collection.name }}
     </div>
@@ -31,7 +38,6 @@
         </div>
       </div>
 
-      <MintNestable v-else-if="state.isCollectionNestable" />
       <Mint v-else :price="collection.price" :provider="provider" :address="address" />
     </div>
   </div>
@@ -39,16 +45,17 @@
 
 <script lang="ts" setup>
 import { ethers, providers } from 'ethers';
+import LinkSVG from '~/assets/icons/icon-open.svg';
 
 const props = defineProps({
-  collection: { type: Object, default: null },
+  collection: { type: Object as VuePropType<CollectionInfo>, default: null },
   provider: { type: Object as VuePropType<providers.Web3Provider>, required: true },
   address: { type: String, default: '' },
 });
-const { state } = useNft();
+const config = useRuntimeConfig();
 
-const totalSupply = ref<number>(props.collection.totalSupply);
-const maxSupply = ref<number>(props.collection.maxSupply);
+const totalSupply = ref<string>(props.collection.totalSupply.toString());
+const maxSupply = ref<string>(props.collection.maxSupply.toString());
 const dropStartDate = ref<Date>(new Date(props.collection.dropStart.toNumber() * 1000));
 const dropStartTimestamp = ref<number>(props.collection.dropStart.toNumber() * 1000);
 const price = ref<string>(ethers.utils.formatEther(props.collection.price));
@@ -91,4 +98,18 @@ const countdown = (date: number) => {
   minutes.value = Math.floor((timeleft % (1000 * 60 * 60)) / (1000 * 60));
   seconds.value = Math.floor((timeleft % (1000 * 60)) / 1000);
 };
+
+function collectionLink(): string {
+  switch (config.public.CHAIN_ID) {
+    case Chains.MOONBEAM:
+      return `https://moonbeam.moonscan.io/address/${props.collection.address}`;
+    case Chains.MOONBASE:
+      return `https://moonbase.moonscan.io/address/${props.collection.address}`;
+    case Chains.ASTAR:
+      return `https://astar.subscan.io/address/${props.collection.address}`;
+    default:
+      console.warn('Missing chainId');
+      return '';
+  }
+}
 </script>

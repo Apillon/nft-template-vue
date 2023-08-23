@@ -8,13 +8,17 @@ const appConfig = env === 'development' ? dev : prod;
 export default defineNuxtConfig({
   ssr: false,
 
+  devServer: {
+    port: 3001,
+  },
+
   typescript: { shim: false },
 
   runtimeConfig: {
     public: appConfig,
   },
 
-  css: ['@/assets/css/main.css'],
+  css: ['@/assets/css/main.css', '@/assets/css/tooltip.css'],
 
   components: ['./components'],
 

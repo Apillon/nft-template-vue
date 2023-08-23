@@ -57,7 +57,7 @@ onMounted(async () => {
 async function transferChildWrapper(contractAddress: string, childId: BigNumber) {
   loadingTransfer.value = true;
 
-  const status = await transferChild(
+  await transferChild(
     props.parentId,
     state.walletAddress,
     0,
@@ -67,12 +67,6 @@ async function transferChildWrapper(contractAddress: string, childId: BigNumber)
     false,
     '0x'
   );
-  if (status) {
-    useNuxtApp().$toast.success('Child has been transferred');
-  } else {
-    useNuxtApp().$toast.error('Token could not be transferred! Wrong token address or token ID.');
-  }
-
   loadingTransfer.value = false;
 }
 </script>

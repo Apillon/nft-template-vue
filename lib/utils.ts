@@ -1,3 +1,5 @@
+import { toast } from 'vue3-toastify';
+
 function browserName() {
   const userAgent = navigator.userAgent;
   let browserName = '';
@@ -104,15 +106,50 @@ export const switchChain = async (chainId: string) => {
 
 export function checkInputAddress(address?: string) {
   if (!address) {
-    useNuxtApp().$toast.error('Enter contract address!');
+    useNuxtApp().$toast.warning('Enter contract address!');
     return false;
   }
   return true;
+}
+export function checkInputAmount(amount?: number | string) {
+  if (amount && Number(amount) > 0 && Number(amount) <= 5) {
+    return true;
+  }
+  useNuxtApp().$toast.warning('Enter valid amount (number from 1 to 5)!');
+  return false;
 }
 export function checkInputToken(token?: number | string) {
   if (token && Number(token) >= 0) {
     return true;
   }
-  useNuxtApp().$toast.error('Enter token ID!');
+  useNuxtApp().$toast.warning('Enter token ID!');
   return false;
+}
+
+export function transactionError(msg: string, error: any) {
+  if (error) {
+    const errorMsg =
+      typeof error === 'string'
+        ? error
+        : typeof error === 'object' && error?.data?.message
+        ? error.data.message
+        : typeof error === 'object' && error?.message
+        ? error.message
+        : JSON.stringify(error);
+
+    if (errorMsg.includes('rejected') || errorMsg.includes('denied')) {
+      toast('Transaction has been rejected', { type: 'info' });
+      return;
+    } else if (errorMsg.includes('OutOfFund')) {
+      toast('Your account balance is too low', { type: 'warning' });
+      return;
+    } else if (errorMsg.includes('account balance too low')) {
+      toast('Your account balance is too low', { type: 'warning' });
+      return;
+    } else if (error?.message.includes('transaction')) {
+      toast('Transaction failed', { type: 'warning' });
+      return;
+    }
+  }
+  toast(msg, { type: 'error' });
 }

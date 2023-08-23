@@ -28,26 +28,15 @@ const address = ref<string>('');
 async function mintWrapper() {
   loadingMint.value = true;
 
-  const status = await childMint(config.public.NFT_ADDRESS, 1);
-  if (status) {
-    useNuxtApp().$toast.success('Token has been minted');
-  } else {
-    useNuxtApp().$toast.error('Token could not be minted! All tokens has already been minted.');
-  }
+  await childMint(config.public.NFT_ADDRESS, 1);
+
   loadingMint.value = false;
 }
 
 async function childMintWrapper() {
   loadingNestMint.value = true;
 
-  const status = await childMint(address.value, 1);
-  if (status) {
-    useNuxtApp().$toast.success('Token has been minted');
-  } else {
-    useNuxtApp().$toast.error(
-      'Token could not be minted! Wrong address or all tokens has already been minted.'
-    );
-  }
+  await childMint(address.value, 1);
 
   loadingNestMint.value = false;
 }
