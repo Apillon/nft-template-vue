@@ -36,7 +36,7 @@ async function mint() {
 
     const gasLimit = await nftContract
       .connect(props.provider.getSigner())
-      .estimateGas.mint(props.address, amount, { value });
+      .estimateGas.mint(props.address, amount.value, { value });
 
     const mintData = { value, gasLimit: gasLimit.mul(11).div(10) };
     await nftContract
