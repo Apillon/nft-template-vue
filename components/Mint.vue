@@ -46,11 +46,11 @@ async function mint() {
     toast('Token is being minted', { type: 'success' });
   } catch (e) {
     console.error(e);
+    transactionError('Unsuccessful mint', e);
   }
 
   setTimeout(() => {
     loading.value = false;
-    transactionError('Unsuccessful mint', e);
   }, 300);
 }
 

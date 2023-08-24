@@ -176,7 +176,7 @@ export default function useNestable() {
       useNuxtApp().$toast.success('Child is being transferred');
     } catch (e) {
       console.log(e);
-      transactionError('Token could not be transferred! Wrong token address or token ID.', e);
+      transactionError('Token could not be transferred!', e);
     }
   }
 
