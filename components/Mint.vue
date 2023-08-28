@@ -27,6 +27,7 @@ async function mint() {
 
   if (!checkInputAmount(amount.value)) {
     console.log('Wrong amount number');
+    loading.value = false;
     return;
   }
 
