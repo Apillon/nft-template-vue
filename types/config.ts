@@ -8,6 +8,6 @@ export enum AppEnv {
 declare global {
   interface ConfigInterface extends PublicRuntimeConfig {
     CHAIN_ID: String;
-    NFT_ADDRESS: String;
+    CONTRACT_ADDRESS: String;
   }
 }

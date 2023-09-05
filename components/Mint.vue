@@ -32,7 +32,7 @@ async function mint() {
   }
 
   try {
-    const nftContract = new ethers.Contract(config.public.NFT_ADDRESS, nftAbi, props.provider);
+    const nftContract = new ethers.Contract(config.public.CONTRACT_ADDRESS, nftAbi, props.provider);
     const value = props.price.mul(ethers.BigNumber.from(amount.value));
 
     const gasLimit = await nftContract

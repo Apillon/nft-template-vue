@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="provider">
     <div class="box collection br text-center">
       <CollectionInfo
         v-if="state.collectionInfo && provider"
@@ -44,10 +44,23 @@
       />
     </div>
   </div>
+  <div v-else class="relative">
+    <div class="btn-connect-wrapper">
+      <h2 class="error">{{ metamaskNotSupportedMessage() }}</h2>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
+import { providers } from 'ethers';
 const { state, getProvider, connectWallet, loadAllNFTs, loadMyNFTs } = useNft();
 
-const provider = getProvider();
+const provider = ref<providers.Web3Provider>();
+
+onMounted(() => {
+  const { ethereum } = window;
+  if (ethereum) {
+    provider.value = getProvider();
+  }
+});
 </script>

@@ -5,7 +5,7 @@ const config = useRuntimeConfig();
 
 const state = reactive<StateInterface>({
   chainId: config.public.CHAIN_ID,
-  nftAddress: config.public.NFT_ADDRESS,
+  nftAddress: config.public.CONTRACT_ADDRESS,
   currentChain: '',
   collectionInfo: null,
   myNFTs: [],
@@ -157,7 +157,7 @@ export default function useNft() {
         }
       } catch (e) {
         console.error(e);
-        useNuxtApp().$toast.error('Apologies, we were unable to load NFT: ' + (i + 1));
+        useNuxtApp().$toast.error('Apologies, we were unable to load NFTs metadata.');
       }
     }
   }

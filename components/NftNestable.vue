@@ -39,10 +39,10 @@
         <div class="btn-group">
           <div class="field">
             <label :for="`addressNestMint_${nft.id}`">
-              <span>Contract Address</span>
+              <span>Child Contract Address</span>
               <Tooltip
                 class="large"
-                tooltip-text="Enter collection address from where you want to mint NFT and transfer it to this NFT. Initial address is from this collection."
+                tooltip-text="Enter child collection address from where you want to mint NFT and transfer it to this NFT. Initial address is from this collection."
               />
             </label>
 
@@ -53,15 +53,17 @@
               @change="handleChangeNestMint"
             />
           </div>
-          <Btn :loading="loadingNestMint" @click="childNestMintWrapper()"> Mint Child </Btn>
+          <Btn :loading="loadingNestMint" @click="childNestMintWrapper()">
+            Nest Mint Child under {{ nft.name }}
+          </Btn>
         </div>
         <div class="btn-group">
           <div class="field">
             <label :for="`addressTransferFrom_${nft.id}`">
-              <span>Contract Address</span>
+              <span>Child Contract Address</span>
               <Tooltip
                 class="large"
-                tooltip-text="Enter collection address from where you want to transfer NFT. Initial address is from this collection."
+                tooltip-text="Enter child collection address from where you want to transfer NFT. Initial address is from this collection."
               />
             </label>
             <input
@@ -89,7 +91,7 @@
             />
           </div>
           <Btn :loading="loadingTransferFrom" @click="nestTransferFromWrapper()">
-            Nest Transfer From
+            Nest NFT under {{ nft.name }}
           </Btn>
         </div>
       </div>
@@ -133,8 +135,8 @@ const loadingReject = ref<boolean>(false);
 const loadingNestMint = ref<boolean>(false);
 const loadingTransferFrom = ref<boolean>(false);
 
-const addressNestMint = ref<string>(config.public.NFT_ADDRESS);
-const addressTransferFrom = ref<string>(config.public.NFT_ADDRESS);
+const addressNestMint = ref<string>(config.public.CONTRACT_ADDRESS);
+const addressTransferFrom = ref<string>(config.public.CONTRACT_ADDRESS);
 const tokenTransferFrom = ref<number>(0);
 
 // check if nestable NFT has any children or pending children

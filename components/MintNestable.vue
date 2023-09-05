@@ -10,7 +10,7 @@
     </div>
     <br />
     <div class="field">
-      <label for="address">Contract Address:</label>
+      <label for="address">Child Contract Address:</label>
       <input id="address" v-model="address" type="text" @change="handleChange" />
     </div>
     <Btn :loading="loadingNestMint" @click="childMintWrapper()">Mint</Btn>
@@ -28,7 +28,7 @@ const address = ref<string>('');
 async function mintWrapper() {
   loadingMint.value = true;
 
-  await childMint(config.public.NFT_ADDRESS, 1);
+  await childMint(config.public.CONTRACT_ADDRESS, 1);
 
   loadingMint.value = false;
 }

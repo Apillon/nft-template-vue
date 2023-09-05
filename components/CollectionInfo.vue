@@ -16,12 +16,19 @@
       {{ collection.symbol }}
     </div>
     <div>
+      <b> Revocable: </b>
+      {{ collection.revokable ? 'TRUE' : 'FALSE' }}
+    </div>
+    <div>
       <b> Soulbound: </b>
       {{ collection.soulbound ? 'TRUE' : 'FALSE' }}
     </div>
     <div>
       <b> Supply: </b>
-      {{ totalSupply }}/{{ maxSupply }}
+      <template v-if="maxSupply === constants.MaxUint256.toString()">
+        {{ totalSupply }}/&infin;
+      </template>
+      <template v-else> {{ totalSupply }}/{{ maxSupply }}</template>
     </div>
     <div v-if="collection.drop" class="drop">
       <div>
@@ -44,7 +51,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ethers, providers } from 'ethers';
+import { ethers, providers, constants } from 'ethers';
 import LinkSVG from '~/assets/icons/icon-open.svg';
 
 const props = defineProps({
@@ -54,8 +61,8 @@ const props = defineProps({
 });
 const config = useRuntimeConfig();
 
-const totalSupply = ref<string>(props.collection.totalSupply.toString());
-const maxSupply = ref<string>(props.collection.maxSupply.toString());
+const totalSupply = ref<String>(props.collection.totalSupply.toString());
+const maxSupply = ref<String>(props.collection.maxSupply.toString());
 const dropStartDate = ref<Date>(new Date(props.collection.dropStart.toNumber() * 1000));
 const dropStartTimestamp = ref<number>(props.collection.dropStart.toNumber() * 1000);
 const price = ref<string>(ethers.utils.formatEther(props.collection.price));
