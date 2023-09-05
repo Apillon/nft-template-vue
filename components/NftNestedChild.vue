@@ -5,7 +5,7 @@
   <div v-else-if="metadata && metadata.name" class="box">
     <img :src="metadata.image" :alt="metadata.name" />
     <div class="box-content">
-      <h3>{{ metadata.name || `#${metadata.id}` }}</h3>
+      <h3>#{{ metadata.id }} {{ metadata.name }}</h3>
       <p>{{ metadata.description }}</p>
       <div class="btn-group">
         <Btn
