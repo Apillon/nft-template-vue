@@ -39,29 +39,14 @@
     </div>
 
     <div v-if="state.walletAddress && state.collectionInfo" id="actions">
-      <h2 class="text-center">Show NFTs:</h2>
+      <h2 class="text-center">List NFTs:</h2>
       <div class="actions">
-        <Btn id="btnAllNFTs" :loading="state.loadingNfts" @click="loadAllNFTs()"> All nfts </Btn>
-        <Btn id="myNFTs" :loading="state.loadingMyNfts" @click="loadMyNFTs()">My nfts</Btn>
+        <Btn @click="router.push('/')"> List nfts </Btn>
       </div>
     </div>
 
-    <div v-if="state.collectionInfo">
-      <h2 v-if="state.collectionInfo.totalSupply.toNumber() === 0" class="text-center">
-        No NFTs, they must be minted first.
-      </h2>
-      <h2 v-else-if="state.filterByAddress && !state.nfts" class="text-center">
-        You don`t have any NFTs
-      </h2>
+    <div v-if="state.collectionInfo">      
 
-      <h2 v-else-if="!state.nfts" class="text-center">No NFTs, they must be minted first.</h2>
-      <NftGallery
-        v-else
-        :address="state.walletAddress"
-        :nfts="state.nfts"
-        :is-nestable="state.isCollectionNestable"
-        :loading="state.loadingNfts || state.loadingMyNfts"
-      />
     </div>
   </div>
   <div v-else class="relative">
@@ -73,7 +58,10 @@
 
 <script lang="ts" setup>
 import { providers } from 'ethers';
-const { state, getProvider, connectWallet, loadAllNFTs, loadMyNFTs } = useNft();
+
+const {params} = useRoute();
+const router = useRouter();
+const { state, getProvider, connectWallet, loadNFT } = useNft();
 
 const provider = ref<providers.Web3Provider>();
 
@@ -81,6 +69,10 @@ onMounted(() => {
   const { ethereum } = window;
   if (ethereum) {
     provider.value = getProvider();
+
+    const nftId = params?.id ? parseInt(`${params?.id}`) : 0;
+    
+    // loadNFT(nftId);
   }
 });
 </script>

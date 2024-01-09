@@ -57,10 +57,12 @@ declare global {
     currentChain: string;
     collectionInfo: CollectionInfo | null;
     myNFTs: Array<number>;
+    nft: Nft;
     nfts: Nft[];
     filterByAddress: boolean;
     isCollectionNestable: boolean;
     loading: boolean;
+    loadingNft: boolean;
     loadingNfts: boolean;
     loadingMyNfts: boolean;
     walletAddress: string;

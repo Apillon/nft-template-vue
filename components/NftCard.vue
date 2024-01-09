@@ -1,8 +1,16 @@
 <template>
   <div :id="'nft_' + nft.id" class="nft">
-    <img :src="nft.image" class="nft_img" :alt="nft.name" />
+    <div class="relative">
+      <img :src="nft.image" class="nft_img" :alt="nft.name" />
+      <div class="absolute tags">
+        <Tag v-if="state.isCollectionNestable">Nestable</Tag>
+      </div>
+    </div>
     <div class="nft_content">
-      <h3>#{{ nft.id }} {{ nft.name }}</h3>
+      <div class="flex justify-between">
+        <h3>{{ nft.name }}</h3>
+        <h3>ID: {{ nft.id }}</h3>
+      </div>
       <p>{{ nft.description }}</p>
       <button v-if="isNestable && isMyNFT" @click="showModalNft()">Open NFT</button>
     </div>

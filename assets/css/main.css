@@ -248,7 +248,6 @@ button .address {
 .nft {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   background: #ffffff;
   overflow: hidden;
   border-radius: 12px;
@@ -263,6 +262,24 @@ button .address {
 .nuxt-icon.icon-auto svg {
   width: auto;
   height: auto;
+}
+
+.absolute { position: absolute; }
+.flex { display: flex; } 
+.justify-between { justify-content: space-between; }
+
+.tags {
+  position: absolute;
+  top: 12px;
+  left: 0px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tag {
+  padding: 2px 16px 2px 8px;
+  background-color: #78dce8;
+  clip-path: polygon(0 0, 100% 0%, 85% 100%, 0% 100%)
 }
 
 .modal {

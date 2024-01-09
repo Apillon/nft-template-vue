@@ -9,10 +9,12 @@ const state = reactive<StateInterface>({
   currentChain: '',
   collectionInfo: null,
   myNFTs: [],
+  nft: {} as Nft,
   nfts: [] as Nft[],
   filterByAddress: false,
   isCollectionNestable: false,
   loading: false,
+  loadingNft: false,
   loadingNfts: false,
   loadingMyNfts: false,
   walletAddress: '',
@@ -33,7 +35,7 @@ export default function useNft() {
     return nftContract;
   }
 
-  async function connectWallet() {
+  async function connectWallet(nftId?: number) {
     const { ethereum } = window;
     if (!ethereum) {
       console.error(metamaskNotSupportedMessage());
@@ -88,7 +90,12 @@ export default function useNft() {
 
     state.myNFTs = await getMyNftIDs();
 
-    await loadAllNFTs();
+    if (nftId) {
+      await loadNFT(nftId);
+    } else {
+      await loadAllNFTs();
+    }
+
     state.loading = false;
   }
 
@@ -132,9 +139,42 @@ export default function useNft() {
     state.loadingMyNfts = false;
   }
 
+  async function loadNFT(id: number) {
+    state.loadingNft = true;
+    await fetchNFT(id);
+    state.loadingNft = false;
+  }
+
+  async function fetchNFT(id: number) {
+    state.nfts = [];
+    const nftContract = getNftContract();
+
+    if (!nftContract || !id) {
+      return;
+    }
+
+    try {
+      const url = await nftContract.tokenURI(id);
+      const metadata = await fetch(url).then(response => {
+        return response.json();
+      });
+      if (metadata && metadata.name) {
+        state.nft = {
+          id,
+          key: id,
+          ...metadata,
+        };
+      }
+    } catch (e) {
+      console.error(e);
+      useNuxtApp().$toast.error('Apologies, we were unable to load NFTs metadata.');
+    }
+  }
+
   async function fetchNFTs(balance: BigNumber | null | undefined, address = '') {
     state.nfts = [];
     const nftContract = getNftContract();
+
     if (!nftContract || !balance || balance.toNumber() === 0) {
       return;
     }
@@ -198,6 +238,7 @@ export default function useNft() {
     getNftContract,
     getCollectionInfo,
     isTokenNestable,
+    loadNFT,
     loadAllNFTs,
     loadMyNFTs,
   };
