@@ -1,15 +1,8 @@
 <template>
   <div v-if="provider">
-    <div class="box collection br text-center">
-      <CollectionInfo
-        v-if="state.collectionInfo && provider"
-        :collection="state.collectionInfo"
-        :provider="provider"
-        :address="state.walletAddress"
-      />
-
+    <div v-if="!state.nftAddress || !state.walletAddress" class="box collection br text-center">
       <div class="btn-connect-wrapper">
-        <Btn id="btnConnect" :loading="state.loading" @click="connectWallet()">
+        <Btn id="btnConnect" :loading="state.loading" @click="connectWalletWrapper">
           <template v-if="state.walletAddress && state.walletAddress.length > 0">
             <NuxtIcon name="wallet" class="icon-auto" />
             <span class="address">{{ state.walletAddress.slice(0, 11) }}</span>
@@ -19,35 +12,33 @@
       </div>
     </div>
 
-    <div
-      v-if="state.walletAddress && state.collectionInfo && state.isCollectionNestable"
-      id="nestableInfo"
-      class="nestable-info"
-    >
-      <h3>
-        The collection you are viewing supports nesting NFTs you own. To setup the nested
-        relationship between NFTs, you first have to own them.
-      </h3>
-      <strong>Instructions:</strong>
-      <ol>
-        <li>Mint one or multiple NFTs</li>
-        <li>Once minted, click on “My NFTs”</li>
-        <li>The NFTs you own will be displayed</li>
-        <li>Click on the NFT you want to set as a parent</li>
-        <li>A window will open, allowing you to link child NFTs to that NFT</li>
-      </ol>
-    </div>
-
-    <div v-if="state.walletAddress && state.collectionInfo" id="actions">
-      <h2 class="text-center">List NFTs:</h2>
-      <div class="actions">
-        <Btn @click="router.push('/')"> List nfts </Btn>
+    <template v-else-if="state.nft?.id">
+      <div class="absolute">
+        <Btn @click="router.push('/')">&#8656; Go back</Btn>
       </div>
-    </div>
 
-    <div v-if="state.collectionInfo">      
+      <div class="nestable-nft">
+        <NftCard :nft="state.nft" :is-nestable="state.isCollectionNestable" pending-children />
+      </div>
 
-    </div>
+      <NftChildren :parent-id="state.nft.id" />
+
+      <div v-if="state.isCollectionNestable" class="nesting flex">
+        <NftNesting :nft-id="nftId" />
+
+        <div>
+          <div class="box collection br text-center">
+            <CollectionInfo
+              v-if="state.collectionInfo && provider"
+              :collection="state.collectionInfo"
+              :provider="provider"
+              :address="state.walletAddress"
+              :nft-id="nftId"
+            />
+          </div>
+        </div>
+      </div>
+    </template>
   </div>
   <div v-else class="relative">
     <div class="btn-connect-wrapper">
@@ -58,21 +49,44 @@
 
 <script lang="ts" setup>
 import { providers } from 'ethers';
+import { toast } from 'vue3-toastify';
 
-const {params} = useRoute();
+const { params } = useRoute();
 const router = useRouter();
-const { state, getProvider, connectWallet, loadNFT } = useNft();
+const { state, getProvider, connectWallet, loadNFT, loadMyNFTs, resetNft } = useNft();
 
+const nftId = ref<number>(params?.id ? parseInt(`${params?.id}`) : 0);
 const provider = ref<providers.Web3Provider>();
 
-onMounted(() => {
+const nftExists = computed(() => state.nft && state.nft.name);
+
+onMounted(async () => {
+  resetNft();
+
   const { ethereum } = window;
   if (ethereum) {
     provider.value = getProvider();
 
-    const nftId = params?.id ? parseInt(`${params?.id}`) : 0;
-    
-    // loadNFT(nftId);
+    if (state.collectionInfo) {
+      await loadNFT(nftId.value);
+      await loadMyNFTs();
+
+      if (!nftExists.value) {
+        onLoadError();
+      }
+    }
   }
 });
+
+async function connectWalletWrapper() {
+  await connectWallet(nftId.value);
+
+  if (!nftExists.value) {
+    onLoadError();
+  }
+}
+function onLoadError() {
+  toast('Token is being minted', { type: 'error' });
+  router.push('/');
+}
 </script>

@@ -92,6 +92,7 @@ export default function useNft() {
 
     if (nftId) {
       await loadNFT(nftId);
+      await loadMyNFTs();
     } else {
       await loadAllNFTs();
     }
@@ -231,6 +232,10 @@ export default function useNft() {
     return nftIDs;
   }
 
+  function resetNft() {
+    state.nft = {} as Nft;
+  }
+
   return {
     state: readonly(state),
     connectWallet,
@@ -241,5 +246,6 @@ export default function useNft() {
     loadNFT,
     loadAllNFTs,
     loadMyNFTs,
+    resetNft,
   };
 }

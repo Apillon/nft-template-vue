@@ -45,6 +45,13 @@
         </div>
       </div>
 
+      <MintNestable
+        v-else-if="state.isCollectionNestable || nftId"
+        :price="collection.price"
+        :provider="provider"
+        :address="address"
+        :nft-id="nftId"
+      />
       <Mint v-else :price="collection.price" :provider="provider" :address="address" />
     </div>
   </div>
@@ -58,7 +65,10 @@ const props = defineProps({
   collection: { type: Object as VuePropType<CollectionInfo>, default: null },
   provider: { type: Object as VuePropType<providers.Web3Provider>, required: true },
   address: { type: String, default: '' },
+  nftId: { type: Number, default: '' },
 });
+
+const { state } = useNft();
 const config = useRuntimeConfig();
 
 const totalSupply = ref<String>(props.collection.totalSupply.toString());
