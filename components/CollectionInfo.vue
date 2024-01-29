@@ -65,7 +65,7 @@ const props = defineProps({
   collection: { type: Object as VuePropType<CollectionInfo>, default: null },
   provider: { type: Object as VuePropType<providers.Web3Provider>, required: true },
   address: { type: String, default: '' },
-  nftId: { type: Number, default: '' },
+  nftId: { type: Number, default: 0 },
 });
 
 const { state } = useNft();

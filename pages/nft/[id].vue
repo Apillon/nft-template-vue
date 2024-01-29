@@ -21,23 +21,27 @@
         <NftCard :nft="state.nft" :is-nestable="state.isCollectionNestable" pending-children />
       </div>
 
-      <NftChildren :parent-id="state.nft.id" />
+      <template v-if="state.isCollectionNestable">
+        <NftChildren :parent-id="state.nft.id" />
 
-      <div v-if="state.isCollectionNestable" class="nesting flex">
-        <NftNesting :nft-id="nftId" />
+        <div class="nesting flex">
+          <NftNesting :nft-id="nftId" />
 
-        <div>
-          <div class="box collection br text-center">
-            <CollectionInfo
-              v-if="state.collectionInfo && provider"
-              :collection="state.collectionInfo"
-              :provider="provider"
-              :address="state.walletAddress"
-              :nft-id="nftId"
-            />
+          <div>
+            <div class="box collection br text-center">
+              <CollectionInfo
+                v-if="state.collectionInfo && provider"
+                :collection="state.collectionInfo"
+                :provider="provider"
+                :address="state.walletAddress"
+                :nft-id="nftId"
+              />
+            </div>
           </div>
         </div>
-      </div>
+
+        <NftTransfer :nft-id="nftId" />
+      </template>
     </template>
   </div>
   <div v-else class="relative">
@@ -71,22 +75,26 @@ onMounted(async () => {
       await loadNFT(nftId.value);
       await loadMyNFTs();
 
-      if (!nftExists.value) {
-        onLoadError();
-      }
+      validateNft();
     }
   }
 });
 
 async function connectWalletWrapper() {
   await connectWallet(nftId.value);
-
-  if (!nftExists.value) {
-    onLoadError();
-  }
+  validateNft();
 }
-function onLoadError() {
-  toast('Token is being minted', { type: 'error' });
-  router.push('/');
+function validateNft() {
+  if (!nftExists.value) {
+    router.push('/');
+    setTimeout(() => {
+      toast('Token is being minted', { type: 'warning' });
+    }, 100);
+  } else if (!state.myNFTs.includes(state.nft.id)) {
+    router.push('/');
+    setTimeout(() => {
+      toast('You are not owner of this NFT.', { type: 'warning' });
+    }, 100);
+  }
 }
 </script>

@@ -16,7 +16,6 @@ export default function useNestable() {
 
   async function pendingChildrenOf(parentId: number, tokenAddress?: string): Promise<Child[]> {
     try {
-      console.log(parentId, tokenAddress);
       const nftContract = getNftContract(tokenAddress);
       return await nftContract.connect(getProvider().getSigner()).pendingChildrenOf(parentId);
     } catch (e) {

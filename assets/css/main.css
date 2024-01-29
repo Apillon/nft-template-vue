@@ -56,8 +56,7 @@ body.lock {
   padding: 16px 24px 24px;
 }
 .box img {
-  height: 100%;
-  object-fit: contain;
+  width: 100%;
 }
 .box.collection {
   position: relative;
@@ -260,8 +259,7 @@ button .address {
   padding: 16px 24px 24px;
 }
 .nft_img {
-  height: 100%;
-  object-fit: contain;
+  width: 100%;
 }
 .nuxt-icon.icon-auto svg {
   width: auto;
@@ -320,12 +318,19 @@ button .address {
   right: 10px;
   z-index: 1;
 }
+input[type='radio'] + label {
+  cursor: pointer;
+}
 input[type='radio']:checked + label .nft {
   box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.35);
 }
 .nestable-nft .nft {
   max-width: 400px;
   margin: 0 auto 0;
+}
+.nestable-info {
+  max-width: 500px;
+  margin: 50px auto;
 }
 
 .modal {

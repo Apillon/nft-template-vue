@@ -1,12 +1,18 @@
 <template>
-  <div
-    v-for="child in pendingChildren"
-    class="pending-child"
-    :loading="loading"
-    @click="acceptChildWrapper(child.contractAddress, child.tokenId)"
-  >
-    Accept Child: {{ child.tokenId }}
-  </div>
+  <template v-if="pendingChildren && pendingChildren.length > 0">
+    <div
+      v-for="child in pendingChildren"
+      class="pending-child"
+      :loading="loading"
+      @click="acceptChildWrapper(child.contractAddress, child.tokenId)"
+    >
+      Accept Child: {{ child.tokenId }}
+    </div>
+    <div class="pending-child" :loading="loading" @click="rejectChildrenWrapper()">
+      <span v-if="pendingChildren.length > 1">Reject Children</span>
+      <span v-else>Reject Child</span>
+    </div>
+  </template>
 </template>
 
 <script lang="ts" setup>
@@ -16,7 +22,7 @@ const props = defineProps({
   nftId: { type: Number, default: '' },
 });
 
-const { pendingChildrenOf, acceptChild } = useNestable();
+const { pendingChildrenOf, acceptChild, rejectAllChildren } = useNestable();
 
 const loading = ref<boolean>(false);
 
@@ -32,6 +38,12 @@ onMounted(async () => {
 async function acceptChildWrapper(childAddress: string, childId: BigNumber) {
   loading.value = true;
   await acceptChild(props.nftId, 0, childAddress, childId.toNumber());
+  loading.value = false;
+}
+
+async function rejectChildrenWrapper() {
+  loading.value = true;
+  await rejectAllChildren(props.nftId, pendingChildren.value.length);
   loading.value = false;
 }
 </script>

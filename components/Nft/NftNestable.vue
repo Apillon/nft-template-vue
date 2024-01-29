@@ -5,7 +5,6 @@
       <div class="nft_content">
         <h3>#{{ nft.id }} {{ nft.name }}</h3>
         <p>{{ nft.description }}</p>
-        <button v-if="isNestable" @click="showModalNft()">Open NFT</button>
       </div>
     </div>
   </div>

@@ -28,13 +28,15 @@
 </template>
 
 <script lang="ts" setup>
+import { toast } from 'vue3-toastify';
+
 const props = defineProps({
   nftId: { type: Number, default: '' },
 });
 
 const config = useRuntimeConfig();
 const { state } = useNft();
-const { nestTransferFrom } = useNestable();
+const { childrenOf, nestTransferFrom, pendingChildrenOf } = useNestable();
 
 const loading = ref<boolean>(false);
 const tokenId = ref<number>(0);
@@ -50,7 +52,18 @@ const handleChange = (event: Event) => {
 async function nestTransferFromWrapper() {
   loading.value = true;
 
-  if (checkInputToken(tokenId.value)) {
+  const children = await childrenOf(tokenId.value);
+  const pendingChildren = await pendingChildrenOf(tokenId.value);
+
+  if (children && children.length > 0) {
+    toast('This NFT already has children. Please remove his children or use another NFT.', {
+      type: 'warning',
+    });
+  } else if (pendingChildren && pendingChildren.length > 0) {
+    toast('This NFT has pending children. Please reject his pending children or use another NFT.', {
+      type: 'warning',
+    });
+  } else if (checkInputToken(tokenId.value)) {
     await nestTransferFrom(
       config.public.CONTRACT_ADDRESS,
       state.nftAddress,
