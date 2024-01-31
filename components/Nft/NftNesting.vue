@@ -18,7 +18,7 @@
           @change="handleChange"
         />
         <label :for="`nft_${nft.id}`">
-          <NftCard :nft="nft" />
+          <NftCard :nft="nft" :open="false" />
         </label>
       </div>
     </div>
@@ -36,7 +36,7 @@ const props = defineProps({
 
 const config = useRuntimeConfig();
 const { state } = useNft();
-const { childrenOf, nestTransferFrom, pendingChildrenOf } = useNestable();
+const { stateNestable, getChildren, getPendingChildren, nestTransferFrom } = useNestable();
 
 const loading = ref<boolean>(false);
 const tokenId = ref<number>(0);
@@ -52,14 +52,14 @@ const handleChange = (event: Event) => {
 async function nestTransferFromWrapper() {
   loading.value = true;
 
-  const children = await childrenOf(tokenId.value);
-  const pendingChildren = await pendingChildrenOf(tokenId.value);
+  await getChildren(tokenId.value);
+  await getPendingChildren(tokenId.value);
 
-  if (children && children.length > 0) {
+  if (stateNestable.children.length > 0) {
     toast('This NFT already has children. Please remove his children or use another NFT.', {
       type: 'warning',
     });
-  } else if (pendingChildren && pendingChildren.length > 0) {
+  } else if (stateNestable.pendingChildren.length > 0) {
     toast('This NFT has pending children. Please reject his pending children or use another NFT.', {
       type: 'warning',
     });

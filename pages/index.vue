@@ -1,12 +1,7 @@
 <template>
   <div v-if="provider">
     <div class="box collection br text-center">
-      <CollectionInfo
-        v-if="state.collectionInfo && provider"
-        :collection="state.collectionInfo"
-        :provider="provider"
-        :address="state.walletAddress"
-      />
+      <CollectionInfo v-if="state.collectionInfo" :collection="state.collectionInfo" />
 
       <div class="btn-connect-wrapper">
         <Btn id="btnConnect" :loading="state.loading" @click="connectWallet()">
@@ -41,8 +36,8 @@
     <div v-if="state.walletAddress && state.collectionInfo" id="actions">
       <h2 class="text-center">Show NFTs:</h2>
       <div class="actions">
-        <Btn id="btnAllNFTs" :loading="state.loadingNfts" @click="loadAllNFTs()"> All nfts </Btn>
-        <Btn id="myNFTs" :loading="state.loadingMyNfts" @click="loadMyNFTs()">My nfts</Btn>
+        <Btn id="btnAllNFTs" :loading="state.loadingNfts" @click="showNfts()"> All nfts </Btn>
+        <Btn id="myNFTs" :loading="state.loadingMyNfts" @click="showMyNfts()">My nfts</Btn>
       </div>
     </div>
 
@@ -50,16 +45,15 @@
       <h2 v-if="state.collectionInfo.totalSupply.toNumber() === 0" class="text-center">
         No NFTs, they must be minted first.
       </h2>
-      <h2 v-else-if="state.filterByAddress && !state.nfts" class="text-center">
+      <h2 v-else-if="state.filterByAddress && !nfts" class="text-center">
         You don`t have any NFTs
       </h2>
 
-      <h2 v-else-if="!state.nfts" class="text-center">No NFTs, they must be minted first.</h2>
+      <h2 v-else-if="!nfts" class="text-center">No NFTs, they must be minted first.</h2>
       <NftGallery
         v-else
         :address="state.walletAddress"
-        :nfts="state.nfts"
-        :is-nestable="state.isCollectionNestable"
+        :nfts="nfts"
         :loading="state.loadingNfts || state.loadingMyNfts"
       />
     </div>
@@ -73,14 +67,18 @@
 
 <script lang="ts" setup>
 import { providers } from 'ethers';
-const { state, getProvider, connectWallet, loadAllNFTs, loadMyNFTs } = useNft();
+const { state, getProvider, connectWallet, showNfts, showMyNfts, getNfts } = useNft();
 
 const provider = ref<providers.Web3Provider>();
 
-onMounted(() => {
-  const { ethereum } = window;
-  if (ethereum) {
-    provider.value = getProvider();
+const nfts = computed(() => {
+  if (!state.filterByAddress) {
+    return state.nfts.map(item => item);
   }
+  return state.nfts.filter(item => state.myNftIDs.includes(item.id));
+});
+
+onMounted(() => {
+  provider.value = getProvider();
 });
 </script>

@@ -24,7 +24,7 @@ import { BigNumber } from 'ethers';
 
 const props = defineProps({
   parentId: { type: Number, default: 0 },
-  childNft: { type: Object as VuePropType<Child>, required: true },
+  childNft: { type: Object as PropType<Child>, required: true },
 });
 
 const { state, getNftContract } = useNft();

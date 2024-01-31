@@ -1,15 +1,17 @@
 <template>
-  <template v-if="pendingChildren && pendingChildren.length > 0">
+  <template v-if="stateNestable.pendingChildren.length > 0">
     <div
-      v-for="child in pendingChildren"
-      class="pending-child"
-      :loading="loading"
+      v-for="(child, key) in stateNestable.pendingChildren"
+      class="pending-child relative"
+      :class="{ disabled: key > 0 }"
       @click="acceptChildWrapper(child.contractAddress, child.tokenId)"
     >
-      Accept Child: {{ child.tokenId }}
+      <Spinner v-if="loading && key === 0" :size="14" />
+      <span v-else> Accept Child: {{ child.tokenId }} </span>
     </div>
-    <div class="pending-child" :loading="loading" @click="rejectChildrenWrapper()">
-      <span v-if="pendingChildren.length > 1">Reject Children</span>
+    <div class="pending-child relative" :loading="loading" @click="rejectChildrenWrapper()">
+      <Spinner v-if="loadingReject" :size="14" />
+      <span v-else-if="stateNestable.pendingChildren.length > 1">Reject Children</span>
       <span v-else>Reject Child</span>
     </div>
   </template>
@@ -22,16 +24,14 @@ const props = defineProps({
   nftId: { type: Number, default: '' },
 });
 
-const { pendingChildrenOf, acceptChild, rejectAllChildren } = useNestable();
+const { stateNestable, getPendingChildren, acceptChild, rejectAllChildren } = useNestable();
 
 const loading = ref<boolean>(false);
-
-// check if nestable NFT has any children or pending children
-const pendingChildren = ref<Child[]>([]);
+const loadingReject = ref<boolean>(false);
 
 onMounted(async () => {
   if (props.nftId) {
-    pendingChildren.value = await pendingChildrenOf(props.nftId);
+    await getPendingChildren(props.nftId);
   }
 });
 
@@ -42,8 +42,8 @@ async function acceptChildWrapper(childAddress: string, childId: BigNumber) {
 }
 
 async function rejectChildrenWrapper() {
-  loading.value = true;
-  await rejectAllChildren(props.nftId, pendingChildren.value.length);
-  loading.value = false;
+  loadingReject.value = true;
+  await rejectAllChildren(props.nftId, stateNestable.pendingChildren.length);
+  loadingReject.value = false;
 }
 </script>

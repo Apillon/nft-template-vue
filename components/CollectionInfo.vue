@@ -48,23 +48,19 @@
       <MintNestable
         v-else-if="state.isCollectionNestable || nftId"
         :price="collection.price"
-        :provider="provider"
-        :address="address"
         :nft-id="nftId"
       />
-      <Mint v-else :price="collection.price" :provider="provider" :address="address" />
+      <Mint v-else :price="collection.price" />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ethers, providers, constants } from 'ethers';
+import { ethers, constants } from 'ethers';
 import LinkSVG from '~/assets/icons/icon-open.svg';
 
 const props = defineProps({
-  collection: { type: Object as VuePropType<CollectionInfo>, default: null },
-  provider: { type: Object as VuePropType<providers.Web3Provider>, required: true },
-  address: { type: String, default: '' },
+  collection: { type: Object as PropType<CollectionInfo>, default: null },
   nftId: { type: Number, default: 0 },
 });
 

@@ -9,18 +9,19 @@
 </template>
 
 <script lang="ts" setup>
-import { BigNumber, ethers, providers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { toast } from 'vue3-toastify';
 
 const props = defineProps({
-  provider: { type: Object as VuePropType<providers.Web3Provider>, required: true },
-  address: { type: String, default: '' },
   price: { type: BigNumber, default: '' },
 });
 
 const config = useRuntimeConfig();
+const { state, getProvider, pollingMyNftIDs, pollingNfts } = useNft();
+
 const loading = ref<boolean>(false);
 const amount = ref<number>(1);
+const provider = getProvider();
 
 async function mint() {
   loading.value = true;
@@ -32,19 +33,23 @@ async function mint() {
   }
 
   try {
-    const nftContract = new ethers.Contract(config.public.CONTRACT_ADDRESS, nftAbi, props.provider);
+    const nftContract = new ethers.Contract(config.public.CONTRACT_ADDRESS, nftAbi, provider);
     const value = props.price.mul(ethers.BigNumber.from(amount.value));
 
     const gasLimit = await nftContract
-      .connect(props.provider.getSigner())
-      .estimateGas.mint(props.address, amount.value, { value });
+      .connect(provider.getSigner())
+      .estimateGas.mint(state.walletAddress, amount.value, { value });
 
     const mintData = { value, gasLimit: gasLimit.mul(11).div(10) };
     await nftContract
-      .connect(props.provider.getSigner())
-      .mint(props.address, amount.value, mintData);
+      .connect(provider.getSigner())
+      .mint(state.walletAddress, amount.value, mintData);
 
     toast('Token is being minted', { type: 'success' });
+
+    /** Refresh MY NFTs */
+    pollingNfts();
+    pollingMyNftIDs();
   } catch (e) {
     console.error(e);
     transactionError('Unsuccessful mint', e);

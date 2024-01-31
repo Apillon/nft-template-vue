@@ -1,6 +1,9 @@
 <template>
   <div v-if="provider">
-    <div v-if="!state.nftAddress || !state.walletAddress" class="box collection br text-center">
+    <div
+      v-if="!state.nftAddress || !state.walletAddress || state.loading"
+      class="box collection br text-center"
+    >
       <div class="btn-connect-wrapper">
         <Btn id="btnConnect" :loading="state.loading" @click="connectWalletWrapper">
           <template v-if="state.walletAddress && state.walletAddress.length > 0">
@@ -30,10 +33,8 @@
           <div>
             <div class="box collection br text-center">
               <CollectionInfo
-                v-if="state.collectionInfo && provider"
+                v-if="state.collectionInfo"
                 :collection="state.collectionInfo"
-                :provider="provider"
-                :address="state.walletAddress"
                 :nft-id="nftId"
               />
             </div>
@@ -43,6 +44,7 @@
         <NftTransfer :nft-id="nftId" />
       </template>
     </template>
+    <Spinner v-else />
   </div>
   <div v-else class="relative">
     <div class="btn-connect-wrapper">
@@ -57,7 +59,7 @@ import { toast } from 'vue3-toastify';
 
 const { params } = useRoute();
 const router = useRouter();
-const { state, getProvider, connectWallet, loadNFT, loadMyNFTs, resetNft } = useNft();
+const { state, getProvider, connectWallet, getNft, getNfts, resetNft } = useNft();
 
 const nftId = ref<number>(params?.id ? parseInt(`${params?.id}`) : 0);
 const provider = ref<providers.Web3Provider>();
@@ -72,8 +74,8 @@ onMounted(async () => {
     provider.value = getProvider();
 
     if (state.collectionInfo) {
-      await loadNFT(nftId.value);
-      await loadMyNFTs();
+      await getNfts();
+      getNft(nftId.value);
 
       validateNft();
     }
@@ -90,7 +92,7 @@ function validateNft() {
     setTimeout(() => {
       toast('Token is being minted', { type: 'warning' });
     }, 100);
-  } else if (!state.myNFTs.includes(state.nft.id)) {
+  } else if (!state.myNftIDs.includes(nftId.value)) {
     router.push('/');
     setTimeout(() => {
       toast('You are not owner of this NFT.', { type: 'warning' });

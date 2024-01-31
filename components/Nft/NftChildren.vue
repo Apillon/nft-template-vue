@@ -1,9 +1,9 @@
 <template>
-  <div v-if="children && children.length > 0" class="nft-children">
+  <div v-if="stateNestable.children.length > 0" class="nft-children">
     <h3>Children</h3>
     <div class="grid small">
       <NftNestedChild
-        v-for="(child, key) in children"
+        v-for="(child, key) in stateNestable.children"
         :key="key"
         :parent-id="parentId"
         :child-nft="child"
@@ -17,11 +17,9 @@ const props = defineProps({
   parentId: { type: Number, default: 0 },
 });
 
-const { childrenOf } = useNestable();
-
-const children = ref<Child[]>([]);
+const { stateNestable, getChildren } = useNestable();
 
 onMounted(async () => {
-  children.value = await childrenOf(props.parentId);
+  await getChildren(props.parentId);
 });
 </script>

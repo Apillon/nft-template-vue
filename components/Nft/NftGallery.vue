@@ -1,6 +1,6 @@
 <template>
   <div v-if="nfts.length" class="grid">
-    <NftCard v-for="(nft, key) in nfts" :key="key" :nft="nft" :is-nestable="isNestable" />
+    <NftCard v-for="(nft, key) in nfts" :key="key" :nft="nft" />
   </div>
   <div v-else-if="address && !loading" class="loading_box">
     <p>You don`t have any NFTs</p>
@@ -14,7 +14,6 @@
 defineProps({
   address: { type: String, default: '' },
   nfts: { type: Array<Nft>, required: true },
-  isNestable: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
 });
 </script>

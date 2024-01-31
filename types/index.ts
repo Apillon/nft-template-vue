@@ -1,5 +1,4 @@
 import { BigNumber, ethers } from 'ethers';
-import { PropType } from 'nuxt/dist/app/compat/capi';
 
 /** NFT Chains */
 export enum Chains {
@@ -8,8 +7,6 @@ export enum Chains {
   ASTAR = '0x250',
 }
 declare global {
-  type VuePropType<T> = PropType<T>;
-
   /**
    * Window
    */
@@ -56,8 +53,8 @@ declare global {
     nftAddress: string;
     currentChain: string;
     collectionInfo: CollectionInfo | null;
-    myNFTs: Array<number>;
-    nft: Nft;
+    myNftIDs: Array<number>;
+    nft: Nft | undefined;
     nfts: Nft[];
     filterByAddress: boolean;
     isCollectionNestable: boolean;

@@ -16,7 +16,7 @@
       </div>
       <p>{{ nft.description }}</p>
       <button
-        v-if="isNestable && isMyNFT && nftId !== nft.id"
+        v-if="state.isCollectionNestable && isMyNFT && nftId !== nft.id && open"
         @click="router.push(`/nft/${nft.id}`)"
       >
         Open NFT
@@ -27,8 +27,8 @@
 
 <script lang="ts" setup>
 const props = defineProps({
-  nft: { type: Object as VuePropType<Nft>, required: true },
-  isNestable: { type: Boolean, default: false },
+  nft: { type: Object as PropType<Nft>, required: true },
+  open: { type: Boolean, default: true },
   pendingChildren: { type: Boolean, default: false },
 });
 const { params } = useRoute();
@@ -38,6 +38,6 @@ const { state } = useNft();
 const nftId = ref<number>(params?.id ? parseInt(`${params?.id}`) : 0);
 
 const isMyNFT = computed(() => {
-  return state.myNFTs.includes(props.nft.id);
+  return state.myNftIDs.includes(props.nft.id);
 });
 </script>

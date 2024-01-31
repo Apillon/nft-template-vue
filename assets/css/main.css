@@ -301,12 +301,17 @@ button .address {
   flex-direction: column;
 }
 .pending-child {
+  height: 24px;
   padding: 2px 8px 2px 16px;
   margin-bottom: 4px;
   cursor: pointer;
   font-weight: 600;
   background-color: #78dce8;
   clip-path: polygon(0 0, 100% 0%, 100% 100%, 15% 100%);
+}
+.pending-child.disabled {
+  opacity: 0.8;
+  pointer-events: none;
 }
 
 .nesting {
