@@ -74,7 +74,9 @@ onMounted(async () => {
     provider.value = getProvider();
 
     if (state.collectionInfo) {
-      await getNfts();
+      if (state.nfts.length === 0) {
+        await getNfts();
+      }
       getNft(nftId.value);
 
       validateNft();

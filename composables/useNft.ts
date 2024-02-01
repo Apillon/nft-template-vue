@@ -216,7 +216,7 @@ export default function useNft() {
         ) {
           clearInterval(getNftsInterval);
 
-          await getCollectionInfo();
+          state.collectionInfo = await getCollectionInfo();
           state.nfts = await fetchNFTs(totalSupply);
           await getMyNftIDs();
         }
