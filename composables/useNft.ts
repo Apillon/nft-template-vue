@@ -231,15 +231,13 @@ export default function useNft() {
       getMyNftsInterval = setInterval(async () => {
         const contract = getNftContract();
         const balance = await contract.balanceOf(state.walletAddress);
-        const myNfts = await getCollectionTotalSupply();
-
-        console.log(balance);
-        console.log(myNfts);
-        console.log(state.myNftIDs);
+        const totalSupply = await getCollectionTotalSupply();
 
         if (balance && balance > state.myNftIDs.length) {
           clearInterval(getMyNftsInterval);
 
+          state.collectionInfo = await getCollectionInfo();
+          state.nfts = await fetchNFTs(totalSupply);
           await getMyNftIDs();
         }
       }, 10000);

@@ -42,7 +42,7 @@ const loading = ref<boolean>(false);
 const tokenId = ref<number>(0);
 
 const nestableNfts = computed(() => {
-  return state.nfts.filter(item => item.id !== props.nftId);
+  return state.nfts.filter(item => item.id !== props.nftId && state.myNftIDs.includes(item.id));
 });
 
 const handleChange = (event: Event) => {
