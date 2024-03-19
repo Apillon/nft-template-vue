@@ -195,11 +195,13 @@ export default function useNestable() {
     }
 
     try {
-      await childNftContract
+      const tx = await childNftContract
         .connect(getProvider().getSigner())
         .nestTransferFrom(state.walletAddress, toAddress, tokenId, destinationId, data);
 
       useNuxtApp().$toast.success('Token is being transferred');
+
+      await tx.wait();
 
       /** Refresh MY NFTs */
       pollingMyNftIDs();

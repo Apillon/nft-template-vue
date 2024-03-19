@@ -41,11 +41,14 @@ async function mint() {
       .estimateGas.mint(state.walletAddress, amount.value, { value });
 
     const mintData = { value, gasLimit: gasLimit.mul(11).div(10) };
-    await nftContract
+
+    const tx = await nftContract
       .connect(provider.getSigner())
       .mint(state.walletAddress, amount.value, mintData);
 
     toast('Token is being minted', { type: 'success' });
+
+    await tx.wait();
 
     /** Refresh MY NFTs */
     pollingNfts();

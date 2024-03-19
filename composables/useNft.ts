@@ -165,7 +165,7 @@ export default function useNft() {
 
         promises.push(
           new Promise<void>(resolve => {
-            fetchNftNyId(nftContract, id.toNumber()).then(metadata => {
+            fetchNftById(nftContract, id.toNumber()).then(metadata => {
               if (metadata && metadata.name) {
                 nfts.push(metadata);
               }
@@ -182,7 +182,7 @@ export default function useNft() {
     return nfts;
   }
 
-  async function fetchNftNyId(contract: any, id: number): Promise<Nft | null> {
+  async function fetchNftById(contract: any, id: number): Promise<Nft | null> {
     try {
       const url = await contract.tokenURI(id);
       const metadata = await fetch(url).then(response => {
@@ -203,45 +203,17 @@ export default function useNft() {
   }
 
   async function pollingNfts() {
-    clearInterval(getNftsInterval);
-
-    return new Promise(function () {
-      getNftsInterval = setInterval(async () => {
-        const totalSupply = await getCollectionTotalSupply();
-
-        if (
-          totalSupply &&
-          state.collectionInfo?.totalSupply &&
-          totalSupply.toNumber() > state.collectionInfo.totalSupply.toNumber()
-        ) {
-          clearInterval(getNftsInterval);
-
-          state.collectionInfo = await getCollectionInfo();
-          state.nfts = await fetchNFTs(totalSupply);
-          await getMyNftIDs();
-        }
-      }, 10000);
-    });
+    const totalSupply = await getCollectionTotalSupply();
+    state.collectionInfo = await getCollectionInfo();
+    state.nfts = await fetchNFTs(totalSupply);
+    await getMyNftIDs();
   }
 
   async function pollingMyNftIDs() {
-    clearInterval(getNftsInterval);
-
-    return new Promise(function () {
-      getMyNftsInterval = setInterval(async () => {
-        const contract = getNftContract();
-        const balance = await contract.balanceOf(state.walletAddress);
-        const totalSupply = await getCollectionTotalSupply();
-
-        if (balance && balance > state.myNftIDs.length) {
-          clearInterval(getMyNftsInterval);
-
-          state.collectionInfo = await getCollectionInfo();
-          state.nfts = await fetchNFTs(totalSupply);
-          await getMyNftIDs();
-        }
-      }, 10000);
-    });
+    const totalSupply = await getCollectionTotalSupply();
+    state.collectionInfo = await getCollectionInfo();
+    state.nfts = await fetchNFTs(totalSupply);
+    await getMyNftIDs();
   }
 
   async function checkCollectionType(contract: any) {

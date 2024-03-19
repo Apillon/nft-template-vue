@@ -2,10 +2,10 @@
   <div v-if="nfts.length" class="grid">
     <NftCard v-for="(nft, key) in nfts" :key="key" :nft="nft" />
   </div>
-  <div v-else-if="address && !loading" class="loading_box">
+  <div v-else-if="address && !loading" class="text-center">
     <p>You don`t have any NFTs</p>
   </div>
-  <div v-else-if="!loading" class="loading_box">
+  <div v-else-if="!loading" class="text-center">
     <p>No NFTs, they must be minted first.</p>
   </div>
 </template>

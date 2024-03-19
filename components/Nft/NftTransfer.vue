@@ -90,7 +90,7 @@ async function nestTransferFromWrapper() {
     });
   } else if (checkInputToken(tokenId.value)) {
     await nestTransferFrom(
-      config.public.CONTRACT_ADDRESS,
+      contractAddress.value,
       state.nftAddress,
       tokenId.value,
       props.nftId,
