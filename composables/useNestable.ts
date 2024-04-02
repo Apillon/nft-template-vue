@@ -18,14 +18,6 @@ export default function useNestable() {
     getMyNftIDs,
   } = useNft();
 
-  let getChildrenInterval: any = null;
-  let getPendingChildrenInterval: any = null;
-
-  onUnmounted(() => {
-    clearInterval(getChildrenInterval);
-    clearInterval(getPendingChildrenInterval);
-  });
-
   async function getChildren(parentId: number, tokenAddress?: string) {
     stateNestable.loadingChildren = true;
     stateNestable.children = await fetchChildren(parentId, tokenAddress);
