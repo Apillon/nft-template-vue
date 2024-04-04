@@ -58,10 +58,11 @@ export default function useNft() {
     }
     state.loading = true;
 
-    let provider = getProvider();
+    provider = getProvider();
 
     state.currentChain = await getCurrentChain();
     if (state.currentChain !== state.chainId) {
+      provider = null;
       try {
         await switchChain(state.chainId);
 
