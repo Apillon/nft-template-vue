@@ -40,6 +40,10 @@ body.lock {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   grid-gap: 32px;
+
+  &.small {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
 }
 .box {
   display: flex;
@@ -52,8 +56,7 @@ body.lock {
   padding: 16px 24px 24px;
 }
 .box img {
-  height: 100%;
-  object-fit: contain;
+  width: 100%;
 }
 .box.collection {
   position: relative;
@@ -248,7 +251,6 @@ button .address {
 .nft {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   background: #ffffff;
   overflow: hidden;
   border-radius: 12px;
@@ -257,12 +259,83 @@ button .address {
   padding: 16px 24px 24px;
 }
 .nft_img {
-  height: 100%;
-  object-fit: contain;
+  width: 100%;
 }
 .nuxt-icon.icon-auto svg {
   width: auto;
   height: auto;
+}
+
+.absolute {
+  position: absolute;
+}
+.flex {
+  display: flex;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.nowrap {
+  white-space: nowrap;
+}
+
+.tags {
+  position: absolute;
+  top: 12px;
+  left: 0px;
+  display: flex;
+  flex-direction: column;
+}
+.tag {
+  padding: 2px 16px 2px 8px;
+  margin-bottom: 4px;
+  background-color: #78dce8;
+  clip-path: polygon(0 0, 100% 0%, 85% 100%, 0% 100%);
+}
+
+.pending-children {
+  position: absolute;
+  top: 12px;
+  right: 0px;
+  display: flex;
+  flex-direction: column;
+}
+.pending-child {
+  height: 24px;
+  padding: 2px 8px 2px 16px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  background-color: #78dce8;
+  clip-path: polygon(0 0, 100% 0%, 100% 100%, 15% 100%);
+}
+.pending-child.disabled {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.nesting {
+  margin: 50px 0;
+  gap: 50px;
+}
+.nesting input[type='radio'] {
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+}
+input[type='radio'] + label {
+  cursor: pointer;
+}
+input[type='radio']:checked + label .nft {
+  box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.35);
+}
+.nestable-nft .nft {
+  max-width: 400px;
+  margin: 0 auto 0;
+}
+.nestable-info {
+  max-width: 500px;
+  margin: 50px auto;
 }
 
 .modal {

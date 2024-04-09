@@ -1,10 +1,36 @@
 import { ethers } from 'ethers';
 
-export default function useNestable() {
-  const { state, getNftContract, getProvider, isTokenNestable } = useNft();
+const stateNestable = reactive({
+  loadingChildren: false,
+  loadingPendingChildren: false,
+  children: [] as Child[],
+  pendingChildren: [] as Child[],
+});
 
-  /** Nestable NFT */
-  async function childrenOf(parentId: number, tokenAddress?: string): Promise<Child[]> {
+export default function useNestable() {
+  const {
+    state,
+    getNftContract,
+    getProvider,
+    isTokenNestable,
+    pollingNfts,
+    pollingMyNftIDs,
+    getMyNftIDs,
+  } = useNft();
+
+  async function getChildren(parentId: number, tokenAddress?: string) {
+    stateNestable.loadingChildren = true;
+    stateNestable.children = await fetchChildren(parentId, tokenAddress);
+    stateNestable.loadingChildren = false;
+  }
+
+  async function getPendingChildren(parentId: number, tokenAddress?: string) {
+    stateNestable.loadingPendingChildren = true;
+    stateNestable.pendingChildren = await fetchPendingChildren(parentId, tokenAddress);
+    stateNestable.loadingPendingChildren = false;
+  }
+
+  async function fetchChildren(parentId: number, tokenAddress?: string): Promise<Child[]> {
     try {
       const nftContract = getNftContract(tokenAddress);
       return await nftContract.connect(getProvider().getSigner()).childrenOf(parentId);
@@ -14,7 +40,7 @@ export default function useNestable() {
     }
   }
 
-  async function pendingChildrenOf(parentId: number, tokenAddress?: string): Promise<Child[]> {
+  async function fetchPendingChildren(parentId: number, tokenAddress?: string): Promise<Child[]> {
     try {
       const nftContract = getNftContract(tokenAddress);
       return await nftContract.connect(getProvider().getSigner()).pendingChildrenOf(parentId);
@@ -39,11 +65,16 @@ export default function useNestable() {
         .connect(getProvider().getSigner())
         .estimateGas.mint(state.walletAddress, quantity, { value });
 
-      await childNftContract
+      const tx = await childNftContract
         .connect(getProvider().getSigner())
         .mint(state.walletAddress, quantity, { value, gasLimit: gasLimit.mul(11).div(10) });
 
       useNuxtApp().$toast.success('Token is being minted');
+
+      await tx.wait();
+
+      /** Refresh NFTs */
+      pollingNfts();
     } catch (e) {
       console.log(e);
       transactionError(
@@ -72,7 +103,7 @@ export default function useNestable() {
         .connect(getProvider().getSigner())
         .estimateGas.nestMint(nftContract.address, quantity, destinationId, { value });
 
-      await childNftContract
+      const tx = await childNftContract
         .connect(getProvider().getSigner())
         .nestMint(nftContract.address, quantity, destinationId, {
           value,
@@ -80,6 +111,12 @@ export default function useNestable() {
         });
 
       useNuxtApp().$toast.success('Token is being minted');
+
+      await tx.wait();
+
+      /** Refresh NFTs */
+      pollingNfts();
+      await getPendingChildren(destinationId);
     } catch (e) {
       console.log(e);
       transactionError(
@@ -97,11 +134,18 @@ export default function useNestable() {
   ) {
     try {
       const nftContract = getNftContract();
-      await nftContract
+      const tx = await nftContract
         .connect(getProvider().getSigner())
         .acceptChild(parentId, childIndex, childAddress, childId);
 
       useNuxtApp().$toast.success('Token is being accepted');
+
+      await tx.wait();
+
+      /** Refresh MY NFTs */
+      await getMyNftIDs();
+      await getChildren(parentId);
+      await getPendingChildren(parentId);
     } catch (e) {
       console.log(e);
       transactionError('Token could not be accepted!', e);
@@ -111,11 +155,17 @@ export default function useNestable() {
   async function rejectAllChildren(parentId: number, maxRejections: number) {
     try {
       const nftContract = getNftContract();
-      await nftContract
+
+      const tx = await nftContract
         .connect(getProvider().getSigner())
         .rejectAllChildren(parentId, maxRejections);
 
       useNuxtApp().$toast.success('Tokens is being rejected');
+
+      await tx.wait();
+
+      /** Refresh NFTs */
+      await getPendingChildren(parentId);
     } catch (e) {
       console.log(e);
       transactionError('Tokens could not be rejected!', e);
@@ -137,11 +187,16 @@ export default function useNestable() {
     }
 
     try {
-      await childNftContract
+      const tx = await childNftContract
         .connect(getProvider().getSigner())
         .nestTransferFrom(state.walletAddress, toAddress, tokenId, destinationId, data);
 
       useNuxtApp().$toast.success('Token is being transferred');
+
+      await tx.wait();
+
+      /** Refresh MY NFTs */
+      pollingMyNftIDs();
     } catch (e) {
       console.log(e);
       transactionError('Token could not be transferred! Wrong token address or token ID.', e);
@@ -160,7 +215,7 @@ export default function useNestable() {
   ) {
     try {
       const nftContract = getNftContract();
-      await nftContract
+      const tx = await nftContract
         .connect(getProvider().getSigner())
         .transferChild(
           tokenId,
@@ -174,6 +229,12 @@ export default function useNestable() {
         );
 
       useNuxtApp().$toast.success('Child is being transferred');
+
+      await tx.wait();
+
+      /** Refresh NFTs */
+      pollingMyNftIDs();
+      await getChildren(tokenId);
     } catch (e) {
       console.log(e);
       transactionError('Token could not be transferred!', e);
@@ -181,13 +242,17 @@ export default function useNestable() {
   }
 
   return {
-    childrenOf,
-    pendingChildrenOf,
+    stateNestable: readonly(stateNestable),
+
+    acceptChild,
     childMint,
     childNestMint,
-    acceptChild,
-    rejectAllChildren,
+    fetchChildren,
+    fetchPendingChildren,
+    getChildren,
+    getPendingChildren,
     nestTransferFrom,
+    rejectAllChildren,
     transferChild,
   };
 }

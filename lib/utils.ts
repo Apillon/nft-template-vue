@@ -122,7 +122,7 @@ export function checkInputToken(token?: number | string) {
   if (token && Number(token) >= 0) {
     return true;
   }
-  useNuxtApp().$toast.warning('Enter token ID!');
+  useNuxtApp().$toast.warning('Please select NFT');
   return false;
 }
 
@@ -132,10 +132,10 @@ export function transactionError(msg: string, error: any) {
       typeof error === 'string'
         ? error
         : typeof error === 'object' && error?.data?.message
-        ? error.data.message
-        : typeof error === 'object' && error?.message
-        ? error.message
-        : JSON.stringify(error);
+          ? error.data.message
+          : typeof error === 'object' && error?.message
+            ? error.message
+            : JSON.stringify(error);
 
     if (errorMsg.includes('rejected') || errorMsg.includes('denied')) {
       toast('Transaction has been rejected', { type: 'info' });

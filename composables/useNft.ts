@@ -8,32 +8,48 @@ const state = reactive<StateInterface>({
   nftAddress: config.public.CONTRACT_ADDRESS,
   currentChain: '',
   collectionInfo: null,
-  myNFTs: [],
+  myNftIDs: [],
+  nft: {} as Nft,
   nfts: [] as Nft[],
   filterByAddress: false,
   isCollectionNestable: false,
   loading: false,
+  loadingNft: false,
   loadingNfts: false,
   loadingMyNfts: false,
   walletAddress: '',
 });
 
 export default function useNft() {
+  let provider: any = null;
+  let getNftsInterval: any = null;
+  let getMyNftsInterval: any = null;
+
+  const contracts: Record<string, any> = {};
+
+  onUnmounted(() => {
+    clearInterval(getNftsInterval);
+    clearInterval(getMyNftsInterval);
+  });
+
   function getProvider(): Provider {
-    const { ethereum } = window;
-    return new ethers.providers.Web3Provider(ethereum);
+    if (!provider) {
+      const { ethereum } = window;
+      provider = new ethers.providers.Web3Provider(ethereum);
+    }
+    return provider;
   }
 
-  function getNftContract(tokenAddress?: string): Contract {
-    const nftContract = new ethers.Contract(
-      tokenAddress || state.nftAddress,
-      nftAbi,
-      getProvider()
-    );
-    return nftContract;
+  function getNftContract(contractAddress?: string): Contract {
+    const address = contractAddress || state.nftAddress;
+
+    if (!Object.keys(contracts).includes(address)) {
+      contracts[address] = new ethers.Contract(address, nftAbi, getProvider());
+    }
+    return contracts[address];
   }
 
-  async function connectWallet() {
+  async function connectWallet(nftId?: number) {
     const { ethereum } = window;
     if (!ethereum) {
       console.error(metamaskNotSupportedMessage());
@@ -42,10 +58,11 @@ export default function useNft() {
     }
     state.loading = true;
 
-    let provider = getProvider();
+    provider = getProvider();
 
     state.currentChain = await getCurrentChain();
     if (state.currentChain !== state.chainId) {
+      provider = null;
       try {
         await switchChain(state.chainId);
 
@@ -86,9 +103,13 @@ export default function useNft() {
       return;
     }
 
-    state.myNFTs = await getMyNftIDs();
+    await getMyNftIDs();
+    await getNfts();
 
-    await loadAllNFTs();
+    if (nftId) {
+      getNft(nftId);
+    }
+
     state.loading = false;
   }
 
@@ -110,56 +131,94 @@ export default function useNft() {
       royaltiesAddress: await nftContract.getRoyaltyRecipient(),
     };
   }
+  async function getCollectionTotalSupply(): Promise<BigNumber> {
+    const nftContract = getNftContract();
+    return await nftContract.totalSupply();
+  }
 
-  async function loadAllNFTs() {
+  async function getNfts() {
     state.loadingNfts = true;
     state.filterByAddress = false;
 
     if (state.collectionInfo) {
-      await fetchNFTs(state.collectionInfo.totalSupply);
+      state.nfts = await fetchNFTs(state.collectionInfo.totalSupply);
     }
     state.loadingNfts = false;
   }
 
-  async function loadMyNFTs() {
-    state.loadingMyNfts = true;
-    state.filterByAddress = true;
-
-    const nftContract = getNftContract();
-    const balance = nftContract ? await nftContract.balanceOf(state.walletAddress) : null;
-
-    await fetchNFTs(balance, state.walletAddress);
-    state.loadingMyNfts = false;
+  function getNft(nftId: number) {
+    state.nft = state.nfts.find(item => item.id === nftId);
   }
 
-  async function fetchNFTs(balance: BigNumber | null | undefined, address = '') {
-    state.nfts = [];
+  async function fetchNFTs(balance: BigNumber | null | undefined): Promise<Nft[]> {
+    const nfts = [] as Nft[];
     const nftContract = getNftContract();
+
     if (!nftContract || !balance || balance.toNumber() === 0) {
-      return;
+      return nfts;
     }
 
-    for (let i = 0; i < balance.toBigInt(); i++) {
-      try {
-        const id = address
-          ? await nftContract.tokenOfOwnerByIndex(address, i)
-          : await nftContract.tokenByIndex(i);
-        const url = await nftContract.tokenURI(id.toBigInt());
-        const metadata = await fetch(url).then(response => {
-          return response.json();
-        });
-        if (metadata && metadata.name) {
-          state.nfts.push({
-            key: i,
-            id: id.toNumber(),
-            ...metadata,
-          });
-        }
-      } catch (e) {
-        console.error(e);
-        useNuxtApp().$toast.error('Apologies, we were unable to load NFTs metadata.');
+    try {
+      const promises: Promise<any>[] = [];
+
+      for (let i = 0; i < balance.toBigInt(); i++) {
+        const id = await nftContract.tokenByIndex(i);
+
+        promises.push(
+          new Promise<void>(resolve => {
+            fetchNftById(nftContract, id.toNumber()).then(metadata => {
+              if (metadata && metadata.name) {
+                nfts.push(metadata);
+              }
+              resolve();
+            });
+          })
+        );
       }
+      await Promise.all(promises);
+    } catch (e) {
+      console.error(e);
+      useNuxtApp().$toast.error('Apologies, we were unable to load NFTs metadata.');
     }
+    return nfts;
+  }
+
+  async function fetchNftById(contract: any, id: number): Promise<Nft | null> {
+    try {
+      const url = await contract.tokenURI(id);
+      const metadata = await fetch(url).then(response => {
+        return response.json();
+      });
+      if (metadata && metadata.name) {
+        return {
+          id,
+          key: id,
+          ...metadata,
+        };
+      }
+    } catch (e) {
+      console.error(e);
+      useNuxtApp().$toast.error('Apologies, we were unable to load NFTs metadata.');
+    }
+    return null;
+  }
+
+  async function pollingNfts() {
+    const totalSupply = await getCollectionTotalSupply();
+    state.collectionInfo = await getCollectionInfo();
+    state.nfts = await fetchNFTs(totalSupply);
+    await getMyNftIDs();
+  }
+
+  async function pollingMyNftIDs() {
+    const totalSupply = await getCollectionTotalSupply();
+    state.collectionInfo = await getCollectionInfo();
+    state.nfts = await fetchNFTs(totalSupply);
+    await getMyNftIDs();
+  }
+
+  async function checkCollectionType(contract: any) {
+    state.isCollectionNestable = await isTokenNestable(getNftContract());
   }
 
   async function isTokenNestable(contract: any) {
@@ -171,10 +230,13 @@ export default function useNft() {
     }
   }
 
-  async function getMyNftIDs(tokenAddress?: string): Promise<Array<number>> {
+  async function getMyNftIDs(contractAddress?: string) {
+    state.myNftIDs = await fetchMyNftIDs(contractAddress);
+  }
+  async function fetchMyNftIDs(contractAddress?: string): Promise<Array<number>> {
     const nftIDs = [];
     try {
-      const contract = getNftContract(tokenAddress);
+      const contract = getNftContract(contractAddress);
       const balance = await contract.balanceOf(state.walletAddress);
 
       for (let i = 0; i < balance.toBigInt(); i++) {
@@ -191,14 +253,32 @@ export default function useNft() {
     return nftIDs;
   }
 
+  function showNfts() {
+    state.filterByAddress = false;
+  }
+  function showMyNfts() {
+    state.filterByAddress = true;
+  }
+
+  function resetNft() {
+    state.nft = {} as Nft;
+  }
+
   return {
     state: readonly(state),
     connectWallet,
+    checkCollectionType,
     getProvider,
     getNftContract,
     getCollectionInfo,
     isTokenNestable,
-    loadAllNFTs,
-    loadMyNFTs,
+    getMyNftIDs,
+    getNft,
+    getNfts,
+    pollingNfts,
+    pollingMyNftIDs,
+    resetNft,
+    showNfts,
+    showMyNfts,
   };
 }

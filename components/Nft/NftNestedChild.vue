@@ -2,7 +2,7 @@
   <div v-if="loading" class="relative">
     <Spinner />
   </div>
-  <div v-else-if="metadata && metadata.name" class="box">
+  <div v-else-if="metadata && metadata.name" class="box nft">
     <img :src="metadata.image" :alt="metadata.name" />
     <div class="box-content">
       <h3>#{{ metadata.id }} {{ metadata.name }}</h3>
@@ -24,7 +24,7 @@ import { BigNumber } from 'ethers';
 
 const props = defineProps({
   parentId: { type: Number, default: 0 },
-  childNft: { type: Object as VuePropType<Child>, required: true },
+  childNft: { type: Object as PropType<Child>, required: true },
 });
 
 const { state, getNftContract } = useNft();
