@@ -1,7 +1,7 @@
 // Moonbase
 const config: ConfigInterface = {
   CHAIN_ID: '0x507',
-  CONTRACT_ADDRESS: '599ad30c-d021-492b-a869-a86347950b88',
+  CONTRACT_ADDRESS: '0x2f2DD020a5f1636D5ED1fB09a627a975E191A978',
 };
 // Moonbeam
 // const config: ConfigInterface = {
