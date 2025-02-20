@@ -12,36 +12,32 @@ Once downloaded, the zip file includes all files you need to display your NFT co
 ### Advanced
 
 1. Fork the repo
-2. Configure config/production.ts
+2. Set up environment variables
 3. Make changes to the website (optional)
 4. Deploy files to Apillon hosting
 
 ## Configure
 
-Before the template can interact with the Smart Contract you have deployed via UI, it needs to be manually configured.
+Before the template can interact with the Smart Contract you have deployed via UI, it needs to be configured using environment variables.
 
 To configure the template, do the following:
 
-1. Open the template folder "config"
-2. Locate production.ts file within the config folder
-3. Open the production.ts file in code editor
-4. Change the first line by entering your smart contract address between parenthesis
-5. Select the chain version by commenting and uncommenting the right chain
-
-Example:
-
-```sh
-CONTRACT_ADDRESS = ""; // Paste the address of the NFT collection between the parenthesis
-
-// uncomment the chain you are using by deleting the slashes
-// CHAIN_ID = "0x507"; // Moonbase
-// CHAIN_ID = "0x504"; // Moonbeam
-// CHAIN_ID = "0x250"; // Astar
+1. Set the environment variables in your system or create a .env file in the root of your project.
+2. Add the following variables to your .env file:
 ```
-
-Once you have updated the config/${env}.ts file, save it. Now the website files are ready to be deployed.
+CONTRACT_ADDRESS="your_smart_contract_address"
+CHAIN_ID="your_chain_id"
+```
+Example: 
+```
+CONTRACT_ADDRESS="0xYourSmartContractAddress"
+# Uncomment the chain you are using by deleting the `#`
+# CHAIN_ID="0x507" # Moonbase
+# CHAIN_ID="0x504" # Moonbeam
+# CHAIN_ID="0x250" # Astar
+```
+3. Save the .env file.
 ​
-
 ## Preview the website on your computer
 
 Before uploading the website to Apillon hosting, feel free to edit the code, add any customization or just review whether everything works as expected.

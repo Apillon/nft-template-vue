@@ -1,9 +1,3 @@
-import dev from './config/development';
-import prod from './config/production';
-
-const env = process.env.ENV || process.env.RUN_ENV || process.env.NODE_ENV;
-const appConfig = env === 'development' ? dev : prod;
-
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
 export default defineNuxtConfig({
   ssr: false,
@@ -15,7 +9,10 @@ export default defineNuxtConfig({
   typescript: { shim: false },
 
   runtimeConfig: {
-    public: appConfig,
+    public: {
+      CHAIN_ID: process.env.CHAIN_ID,
+      CONTRACT_ADDRESS: process.env.CONTRACT_ADDRESS,
+    }
   },
 
   css: ['@/assets/css/main.css', '@/assets/css/tooltip.css'],
