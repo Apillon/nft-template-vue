@@ -1,4 +1,7 @@
 <template>
+
+<CollectionMetadataInfo/>
+
   <div v-if="provider">
     <div class="box collection br text-center">
       <CollectionInfo v-if="state.collectionInfo" :collection="state.collectionInfo" />
@@ -13,6 +16,8 @@
         </Btn>
       </div>
     </div>
+
+
 
     <div
       v-if="state.walletAddress && state.collectionInfo && state.isCollectionNestable"

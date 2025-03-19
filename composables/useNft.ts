@@ -1,4 +1,5 @@
 import { BigNumber, ethers } from 'ethers';
+import { Buffer } from 'buffer';
 import nftAbi from '~~/lib/nftAbi';
 
 const config = useRuntimeConfig();
@@ -18,6 +19,8 @@ const state = reactive<StateInterface>({
   loadingNfts: false,
   loadingMyNfts: false,
   walletAddress: '',
+  collectionLogo: '',
+  collectionCover: ''
 });
 
 export default function useNft() {
@@ -230,6 +233,46 @@ export default function useNft() {
     }
   }
 
+  async function getCollectionMetadata(){
+    if(!state.collectionLogo || !state.collectionCover){
+      await fetchCollectionMetadata();
+    }
+  }
+
+  async function fetchCollectionMetadata(){
+    const url = `${config.public.APILLON_API_URL}/storage/${config.public.COLLECTION_BUCKET_UUID}/content`;
+
+    try{
+      const content = await fetch(url, {
+        headers:{
+          'Authorization': `Basic ${Buffer.from(`${config.public.APILLON_API_KEY}:${config.public.APILLON_API_SECRET}`).toString('base64')}`
+        }
+      }).then(response => {
+        return response.json();
+      });
+  
+      const items = content.data?.items ?? [];
+  
+      state.collectionLogo =items.find((item: {
+        type: number;
+        name: string;
+      }) => item.type === 2 && item.name.includes('logo'))?.link;
+  
+  
+      state.collectionCover =items.find((item: {
+        type: number;
+        name: string;
+      }) => item.type === 2 && item.name.includes('cover'))?.link;
+      
+    }
+    catch(e){
+      console.error(e);
+      state.collectionLogo = undefined;
+      state.collectionCover = undefined;
+      return;
+    }
+  }
+
   async function getMyNftIDs(contractAddress?: string) {
     state.myNftIDs = await fetchMyNftIDs(contractAddress);
   }
@@ -280,5 +323,6 @@ export default function useNft() {
     resetNft,
     showNfts,
     showMyNfts,
+    getCollectionMetadata
   };
 }

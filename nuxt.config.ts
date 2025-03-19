@@ -12,11 +12,14 @@ export default defineNuxtConfig({
     public: {
       CHAIN_ID: process.env.CHAIN_ID,
       CONTRACT_ADDRESS: process.env.CONTRACT_ADDRESS,
+      APILLON_API_URL: process.env.APILLON_API_URL,
+      COLLECTION_BUCKET_UUID: process.env.COLLECTION_BUCKET_UUID,
+      APILLON_API_KEY: process.env.APILLON_API_KEY,
+      APILLON_API_SECRET: process.env.APILLON_API_SECRET,
     }
   },
 
   css: ['@/assets/css/main.css', '@/assets/css/tooltip.css'],
-
   components: ['./components'],
 
   modules: [
@@ -66,4 +69,6 @@ export default defineNuxtConfig({
       ],
     },
   },
+
+  compatibilityDate: '2025-03-19',
 });

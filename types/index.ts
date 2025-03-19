@@ -40,6 +40,7 @@ declare global {
     symbol: String;
     totalSupply: BigNumber;
   }
+
   interface Child {
     contractAddress: string;
     tokenId: BigNumber;
@@ -63,5 +64,7 @@ declare global {
     loadingNfts: boolean;
     loadingMyNfts: boolean;
     walletAddress: string;
+    collectionLogo?: string;
+    collectionCover?: string;
   }
 }
