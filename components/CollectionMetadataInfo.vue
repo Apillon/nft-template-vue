@@ -16,10 +16,7 @@
   const { state, getCollectionMetadata } = useNft();
   
   onMounted(() => {
-    loadInfo();
+    getCollectionMetadata();
   });
   
-  function loadInfo() {
-    getCollectionMetadata();
-  }
   </script>
