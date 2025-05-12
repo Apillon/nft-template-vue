@@ -153,3 +153,9 @@ export function transactionError(msg: string, error: any) {
   }
   toast(msg, { type: 'error' });
 }
+
+export function imageLink(imageUrl: string) {
+  return imageUrl.startsWith('ipfs://')
+    ? imageUrl.replace('ipfs://', 'https://w3s.link/ipfs/')
+    : imageUrl;
+}

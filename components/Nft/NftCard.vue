@@ -1,7 +1,7 @@
 <template>
   <div :id="'nft_' + nft.id" class="nft">
     <div class="relative">
-      <img :src="nft.image" class="nft_img" :alt="nft.name" />
+      <img :src="imageLink(nft.image)" class="nft_img" :alt="nft.name" />
       <div class="absolute tags">
         <Tag v-if="state.isCollectionNestable">Nestable</Tag>
       </div>
