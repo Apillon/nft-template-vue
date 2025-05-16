@@ -1,108 +1,15 @@
 import { toast } from 'vue3-toastify';
 
-function browserName() {
-  const userAgent = navigator.userAgent;
-  let browserName = '';
-
-  if (userAgent.match(/chrome|chromium|crios/i)) {
-    browserName = 'chrome';
-  } else if (userAgent.match(/firefox|fxios/i)) {
-    browserName = 'firefox';
-  } else if (userAgent.match(/safari/i)) {
-    browserName = 'safari';
-  } else if (userAgent.match(/opr\//i)) {
-    browserName = 'opera';
-  } else if (userAgent.match(/edg/i)) {
-    browserName = 'edge';
-  } else if (userAgent.match(/brave/i)) {
-    browserName = 'brave';
-  } else {
-    browserName = 'No browser detection';
-  }
-  return browserName;
+export function sleep(timeMs = 1000) {
+  return new Promise(resolve => setTimeout(resolve, timeMs));
 }
-function browserSupportsMetaMask() {
-  return ['chrome', 'firefox', 'brave', 'edge', 'opera'].includes(browserName());
+
+export function numToBigInt(input: number) {
+  return BigInt(input * 10 ** 18);
 }
-export const metamaskNotSupportedMessage = () => {
-  return browserSupportsMetaMask()
-    ? 'You need MetaMask extension to connect wallet!'
-    : 'Your browser does not support MetaMask, please use another browser!';
-};
-
-export const addChain = async (chainId: string) => {
-  const { ethereum } = window;
-
-  if (chainId === '0x507') {
-    // moonbase
-    await ethereum.request({
-      method: 'wallet_addEthereumChain',
-      params: [
-        {
-          chainId,
-          rpcUrls: ['https://rpc.api.moonbase.moonbeam.network/'],
-          chainName: 'Moonbase',
-          nativeCurrency: {
-            name: 'DEV',
-            symbol: 'DEV',
-            decimals: 18,
-          },
-          blockExplorerUrls: ['https://moonbase.moonscan.io/'],
-        },
-      ],
-    });
-  } else if (chainId === '0x504') {
-    // moonbeam
-    await ethereum.request({
-      method: 'wallet_addEthereumChain',
-      params: [
-        {
-          chainId,
-          rpcUrls: ['https://rpc.api.moonbeam.network/'],
-          chainName: 'Moonbeam',
-          nativeCurrency: {
-            name: 'GLMR',
-            symbol: 'GLMR',
-            decimals: 18,
-          },
-          blockExplorerUrls: ['https://moonscan.io/'],
-        },
-      ],
-    });
-  } else if (chainId === '0x250') {
-    // moonbeam
-    await ethereum.request({
-      method: 'wallet_addEthereumChain',
-      params: [
-        {
-          chainId,
-          rpcUrls: ['https://evm.astar.network/'],
-          chainName: 'Astar',
-          nativeCurrency: {
-            name: 'ASTR',
-            symbol: 'ASTR',
-            decimals: 18,
-          },
-          blockExplorerUrls: ['https://blockscout.com/astar'],
-        },
-      ],
-    });
-  } else {
-    throw new Error('Wrong CHAIN_ID');
-  }
-};
-
-export const getCurrentChain = async (): Promise<string> => {
-  const { ethereum } = window;
-  return await ethereum.request({ method: 'eth_chainId' });
-};
-export const switchChain = async (chainId: string) => {
-  const { ethereum } = window;
-  await ethereum.request({
-    method: 'wallet_switchEthereumChain',
-    params: [{ chainId }], // chainId must be in HEX with 0x in front
-  });
-};
+export function bigIntToNum(input: bigint | string | number) {
+  return Number(BigInt(input) / 10n ** 18n);
+}
 
 export function checkInputAddress(address?: string) {
   if (!address) {
@@ -137,14 +44,31 @@ export function transactionError(msg: string, error: any) {
             ? error.message
             : JSON.stringify(error);
 
-    if (errorMsg.includes('rejected') || errorMsg.includes('denied')) {
+    if (errorMsg.includes('insufficient funds')) {
+      toast('Wallet account does not have enough funds.', { type: 'info' });
+      return;
+    } else if (errorMsg.includes('rejected') || errorMsg.includes('denied')) {
       toast('Transaction has been rejected', { type: 'info' });
       return;
-    } else if (errorMsg.includes('OutOfFund')) {
+    } else if (errorMsg.includes('OutOfFund') || errorMsg.includes('account balance too low')) {
       toast('Your account balance is too low', { type: 'warning' });
       return;
-    } else if (errorMsg.includes('account balance too low')) {
-      toast('Your account balance is too low', { type: 'warning' });
+    } else if (errorMsg.includes('transfer caller is not owner nor approved')) {
+      toast('Wallet has not been approved to use this functionality.', { type: 'warning' });
+      return;
+    } else if (errorMsg.includes('Purchase would exceed max supply')) {
+      toast('Tokens depleted. You have requested too many or there is no more supply.', {
+        type: 'warning',
+      });
+      return;
+    } else if (errorMsg.includes('Suggested NFT is not owned by the selected account')) {
+      toast(
+        'Suggested NFT is not owned by the selected account, please try again with other wallet.',
+        { type: 'warning' }
+      );
+      return;
+    } else if (errorMsg.includes('valid recovery code')) {
+      toast('Problem with embedded wallet', { type: 'warning' });
       return;
     } else if (error?.message.includes('transaction')) {
       toast('Transaction failed', { type: 'warning' });
@@ -158,4 +82,11 @@ export function imageLink(imageUrl: string) {
   return imageUrl.startsWith('ipfs://')
     ? imageUrl.replace('ipfs://', 'https://w3s.link/ipfs/')
     : imageUrl;
+}
+
+export function shortHash(val: string) {
+  if (!val || val.length <= 10) {
+    return val;
+  }
+  return `${val.slice(0, 6)}...${val.slice(-4)}`;
 }

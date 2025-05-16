@@ -1,5 +1,33 @@
+export const colors = {
+  primary: '#F9FF73',
+  secondary: '#78DCE8',
+  transparent: 'transparent',
+  current: 'currentColor',
+
+  black: '#000000',
+  white: '#FFFFFF',
+  yellow: '#F9FF73',
+  orange: '#F7AF39',
+  pink: '#FF6188',
+  green: '#A9DC76',
+  violet: '#AB9DF2',
+  blue: '#78dce8',
+
+  bg: '#f0f2da',
+  bgDark: '#313442',
+  bgDarker: '#141721',
+
+  grey: {
+    DEFAULT: '#ccc',
+    transparent: 'rgba(153, 153, 153, 0.64)', // #99999a3
+    dark: '#141721', // rgba(20, 23, 33, 1)
+    darker: '#1e212b', // rgba(30, 33, 43, 1)
+    darkerTransparent: 'rgba(30, 33, 43, 0.64)', // #1e212ba3
+  },
+};
+
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
     `components/**/*.{vue,js}`,
     `layouts/**/*.vue`,
@@ -21,21 +49,7 @@ module.exports = {
       hd: '1920px',
     },
 
-    colors: {
-      primary: '#F9FF73',
-      secondary: '#78DCE8',
-
-      black: '#000000',
-      white: '#FFFFFF',
-      yellow: '#F9FF73',
-      orange: '#F7AF39',
-      green: '#A9DC76',
-      violet: '#AB9DF2',
-      blue: '#78dce8',
-
-      bg: '#f0f2da',
-      bgDark: '#141721',
-    },
+    colors,
 
     fontFamily: {
       sans: ['IBM Plex Sans', 'ui-sans-serif', 'system-ui'],
@@ -53,12 +67,6 @@ module.exports = {
     },
 
     extend: {
-      backgroundImage: {
-        gradientDark: 'linear-gradient(180deg, #06080F 0%, rgba(6, 8, 15, 0) 100%)',
-        gradientDarkReverse: 'linear-gradient(180deg, rgba(6, 8, 15, 0) 0%, #06080F 100%)',
-        w3Warn:
-          'linear-gradient(260deg, #F9FF73 0%, #78DCE8 20.31%, #F7AF39 39.58%, #FF6188 59.37%, #A9DC76 79.17%, #AB9DF2 100%)',
-      },
       borderWidth: {
         1: '1px',
         3: '3px',
@@ -68,10 +76,8 @@ module.exports = {
         light: '0px 0px 4px rgba(240, 242, 218, 0.64)',
       },
       gridTemplateColumns: {
-        billing: 'repeat(auto-fill, minmax(23rem, 1fr))',
-        services: 'repeat(auto-fit, minmax(280px, 1fr))',
-        nft: 'repeat(auto-fill, minmax(220px, 1fr))',
-        nftSmall: 'repeat(auto-fill, minmax(120px, 1fr))',
+        nft: 'repeat(auto-fill, minmax(280px, 1fr))',
+        nftSmall: 'repeat(auto-fill, minmax(180px, 1fr))',
       },
       scale: {
         10: '0.1',

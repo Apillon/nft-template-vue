@@ -1,8 +1,6 @@
-import dev from './config/development';
-import prod from './config/production';
-
-const env = process.env.ENV || process.env.RUN_ENV || process.env.NODE_ENV;
-const appConfig = env === 'development' ? dev : prod;
+import mkcert from 'vite-plugin-mkcert';
+import { moonbaseAlpha } from 'viem/chains';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
 export default defineNuxtConfig({
@@ -10,38 +8,37 @@ export default defineNuxtConfig({
 
   devServer: {
     port: 3001,
+    // https: {
+    //   key: process.env.USERPROFILE + '\\.vite-plugin-mkcert\\cert.key',
+    //   cert: process.env.USERPROFILE + '\\.vite-plugin-mkcert\\cert.crt',
+    // },
   },
 
   typescript: { shim: false },
 
   runtimeConfig: {
-    public: appConfig,
+    public: {
+      CHAIN_ID: moonbaseAlpha.id,
+      CONTRACT_ADDRESS: '',
+      EMBEDDED_WALLET_CLIENT: '',
+      IMG_LOGO: '',
+      IMG_COVER: '',
+      WALLET_CONNECT_PROJECT: '',
+    },
   },
 
   css: ['@/assets/css/main.css', '@/assets/css/tooltip.css'],
 
   components: ['./components'],
 
-  modules: [
-    '@vueuse/nuxt',
-    'nuxt-icons',
-    [
-      '@nuxtjs/google-fonts',
-      {
-        useStylesheet: true,
-        display: 'swap',
-        download: false,
-        families: {
-          'IBM Plex Sans': {
-            wght: [400, 700],
-          },
-        },
-      },
-    ],
-  ],
+  modules: ['@vueuse/nuxt', 'nuxt-icons', '@nuxtjs/google-fonts', '@nuxtjs/tailwindcss'],
 
   imports: {
     dirs: ['./lib', './types'],
+  },
+
+  vite: {
+    plugins: [nodePolyfills(), mkcert()],
   },
 
   app: {
@@ -69,4 +66,22 @@ export default defineNuxtConfig({
       ],
     },
   },
+
+  googleFonts: {
+    useStylesheet: true,
+    display: 'swap',
+    download: false,
+    families: {
+      'IBM Plex Sans': {
+        wght: [400, 700],
+      },
+      Inter: {
+        wght: [400, 700],
+      },
+    },
+  },
+
+  tailwindcss: { cssPath: '~/assets/css/tailwind.css' },
+
+  compatibilityDate: '2025-05-13',
 });

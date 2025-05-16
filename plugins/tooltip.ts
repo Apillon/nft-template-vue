@@ -1,4 +1,4 @@
-import { DirectiveBinding } from 'vue';
+import type { DirectiveBinding } from 'vue';
 
 function init(el: HTMLElement, binding: DirectiveBinding<any>) {
   if (binding.value) {

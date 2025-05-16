@@ -1,5 +1,5 @@
 <template>
-  <div v-if="nfts.length" class="grid">
+  <div v-if="nfts.length" class="grid grid-cols-nft gap-8">
     <NftCard v-for="(nft, key) in nfts" :key="key" :nft="nft" />
   </div>
   <div v-else-if="address && !loading" class="text-center">
