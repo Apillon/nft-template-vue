@@ -53,7 +53,7 @@ export default function useNft() {
       for (let i = 0; i < Number(balance); i++) {
         const id = await getTokenByIndex(i);
 
-        // promises.push(fetchNft(Number(id)));
+        promises.push(fetchNft(Number(id)));
       }
       await Promise.all(promises);
     } catch (e) {
