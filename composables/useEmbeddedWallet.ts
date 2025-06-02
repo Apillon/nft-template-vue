@@ -26,6 +26,10 @@ export default function useEmbeddedWallet() {
   async function mintEW(args: Array<any>, value: bigint, gasLimit: bigint) {
     const chainId = Number(network.value?.id || moonbaseAlpha.id);
 
+    // Not working
+    // await write('mint', args, 'Mint');
+
+    // Working
     const signedTx = await wallet.value?.signPlainTransaction({
       mustConfirm: true,
       tx: {

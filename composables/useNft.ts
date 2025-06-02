@@ -141,13 +141,23 @@ export default function useNft() {
             },
           },
         });
+        // await walletClient.value.?watchAsset({
+        //   type: 'ERC721',
+        //   options: {
+        //     address: contractAddress,
+        //     tokenId: nftId.toString(),
+        //     image,
+        //   },
+        // });
       }
     } catch (e) {
       console.error('Error importing NFT:', e);
     }
     success
       ? $toast.success('NFT successfully imported into the wallet!')
-      : $toast.error('Failed to import NFT into the wallet.');
+      : $toast.info(
+          'If you want to import NFT to wallet, paste contract address and token ID into your wallet.'
+        );
   }
 
   function showNfts() {
