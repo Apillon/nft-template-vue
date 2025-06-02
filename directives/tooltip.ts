@@ -1,4 +1,4 @@
-import { App, DirectiveBinding } from 'vue';
+import type { App, DirectiveBinding } from 'vue';
 
 const tooltipDirective = (app: App<Element>) => {
   app.directive('tooltip', {

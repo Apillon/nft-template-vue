@@ -1,10 +1,18 @@
 <template>
   <Transition name="fade-in">
-    <div v-if="modalVisible" class="modal open">
-      <div class="modal-bg modal-exit" @click="modalVisible = false">
+    <div
+      v-if="modalVisible"
+      class="open invisible fixed left-0 top-0 z-[1000] flex h-screen w-screen items-center justify-center opacity-0 transition-all duration-300 ease-in-out"
+      :class="{ '!visible opacity-100 delay-0': modalVisible }"
+    >
+      <div
+        class="modal-exit absolute h-full w-full bg-black bg-opacity-50"
+        @click="modalVisible = false"
+      ></div>
+      <div
+        class="relative max-h-[90vh] w-full max-w-[90vw] overflow-auto rounded-xl bg-white p-8 lg:max-w-3xl"
+      >
         <div class="btn-modal-exit"></div>
-      </div>
-      <div class="modal-container">
         <slot />
       </div>
     </div>

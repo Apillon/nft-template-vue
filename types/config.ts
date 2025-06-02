@@ -7,7 +7,9 @@ export enum AppEnv {
 
 declare global {
   interface ConfigInterface extends PublicRuntimeConfig {
-    CHAIN_ID: String;
-    CONTRACT_ADDRESS: String;
+    CHAIN_ID: number;
+    CONTRACT_ADDRESS: string;
+    IMG_LOGO: string;
+    IMG_COVER: string;
   }
 }

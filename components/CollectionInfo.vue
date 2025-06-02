@@ -2,8 +2,11 @@
   <div id="collection" class="collection-info">
     <div>
       <b> Collection address: </b>
-      <a :href="collectionLink()" target="_blank" rel="noreferrer">
-        {{ collection.address }}
+      <a
+        :href="contractLink(config.public.CONTRACT_ADDRESS, Number(config.public.CHAIN_ID))"
+        target="_blank"
+      >
+        {{ config.public.CONTRACT_ADDRESS }}
         <img :src="LinkSVG" width="10" height="10" />
       </a>
     </div>
@@ -25,53 +28,45 @@
     </div>
     <div>
       <b> Supply: </b>
-      <template v-if="maxSupply === constants.MaxUint256.toString()">
-        {{ totalSupply }}/&infin;
-      </template>
+      <template v-if="maxSupply === maxUint256.toString()"> {{ totalSupply }}/&infin; </template>
       <template v-else> {{ totalSupply }}/{{ maxSupply }}</template>
     </div>
-    <div v-if="collection.drop" class="drop">
+    <div v-if="collection.drop" class="mx-auto w-fit max-w-lg">
       <div>
         <b> Price: </b>
         {{ price }}
       </div>
-      <h3 v-if="totalSupply === maxSupply">Sold out!</h3>
 
-      <div v-else-if="dropStartTimestamp > Date.now()" id="drop" class="drop">
+      <h3 v-if="totalSupply === maxSupply">Sold out!</h3>
+      <div v-else-if="dropStartTimestamp > Date.now()" class="mx-auto w-fit max-w-lg">
         <div>
           <b> Drop: </b>
           {{ dropStartDate.toDateString() }}{{ ' ' }} {{ dropStartDate.toLocaleTimeString() }}
           {{ days }} <b>d </b> {{ hours }} <b>h </b> {{ minutes }} <b>m </b> {{ seconds }} <b>s </b>
         </div>
       </div>
-
-      <MintNestable
-        v-else-if="state.isCollectionNestable || nftId"
-        :price="collection.price"
-        :nft-id="nftId"
-      />
-      <Mint v-else :price="collection.price" />
+      <FormMint v-else :price="collection.price.toString()" />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ethers, constants } from 'ethers';
+import { formatEther, maxUint256 } from 'viem';
 import LinkSVG from '~/assets/icons/icon-open.svg';
+import { contractLink } from '~/lib/chain';
 
 const props = defineProps({
   collection: { type: Object as PropType<CollectionInfo>, default: null },
-  nftId: { type: Number, default: 0 },
 });
 
-const { state } = useNft();
 const config = useRuntimeConfig();
+const { getBalance, getMaxSupply, getTotalSupply } = useContract();
 
 const totalSupply = ref<String>(props.collection.totalSupply.toString());
 const maxSupply = ref<String>(props.collection.maxSupply.toString());
-const dropStartDate = ref<Date>(new Date(props.collection.dropStart.toNumber() * 1000));
-const dropStartTimestamp = ref<number>(props.collection.dropStart.toNumber() * 1000);
-const price = ref<string>(ethers.utils.formatEther(props.collection.price));
+const dropStartDate = ref<Date>(new Date(Number(props.collection.dropStart) * 1000));
+const dropStartTimestamp = ref<number>(Number(props.collection.dropStart) * 1000);
+const price = ref<string>(formatEther(props.collection.price));
 
 const days = ref<number>(0);
 const hours = ref<number>(0);
@@ -80,6 +75,9 @@ const seconds = ref<number>(0);
 
 onMounted(() => {
   loadInfo();
+  getBalance();
+  getMaxSupply();
+  getTotalSupply();
 });
 
 function loadInfo() {
@@ -111,18 +109,4 @@ const countdown = (date: number) => {
   minutes.value = Math.floor((timeleft % (1000 * 60 * 60)) / (1000 * 60));
   seconds.value = Math.floor((timeleft % (1000 * 60)) / 1000);
 };
-
-function collectionLink(): string {
-  switch (config.public.CHAIN_ID) {
-    case Chains.MOONBEAM:
-      return `https://moonbeam.moonscan.io/address/${props.collection.address}`;
-    case Chains.MOONBASE:
-      return `https://moonbase.moonscan.io/address/${props.collection.address}`;
-    case Chains.ASTAR:
-      return `https://astar.subscan.io/address/${props.collection.address}`;
-    default:
-      console.warn('Missing chainId');
-      return '';
-  }
-}
 </script>
