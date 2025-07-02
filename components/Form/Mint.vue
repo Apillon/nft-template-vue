@@ -39,7 +39,7 @@ async function mint() {
 
     $toast('NFT minting has started', { type: 'info' });
     txWait.hash.value = tx;
-    const receipt = await Promise.race([
+    const receipt: any = await Promise.race([
       txWait.wait(),
       publicClient.waitForTransactionReceipt({ hash: tx }),
     ]);

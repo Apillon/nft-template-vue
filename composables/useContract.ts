@@ -1,5 +1,5 @@
 import { useAccount } from '@apillon/wallet-vue';
-import { useConnectorClient } from '@wagmi/vue';
+import { useConnectorClient, useAccount as useAccountW } from '@wagmi/vue';
 import { createPublicClient, getContract, http, type Address } from 'viem';
 
 const collectionInfo = reactive<CollectionInfo>({
@@ -21,6 +21,7 @@ const contract = ref();
 export default function useContract() {
   const config = useRuntimeConfig();
   const { info } = useAccount();
+  const { address, isConnected } = useAccountW();
   const { data: walletClient } = useConnectorClient();
   const { getContractBalance, mintEW } = useEmbeddedWallet();
   const { network, walletAddress, ensureCorrectNetwork } = useWalletConnect();
@@ -154,22 +155,30 @@ export default function useContract() {
   async function mintToken(price: bigint, amount = 1): Promise<Address | void> {
     const value = price * BigInt(amount);
     const args = [walletAddress.value, amount];
-
-    const gas = await publicClient.estimateContractGas({
-      address: contractAddress,
-      abi: nftAbi,
-      functionName: 'mint',
-      args,
-      account: walletAddress.value,
-      value,
-    });
-    const gasLimit = (gas * 110n) / 100n;
+    const gasLimit = await calcGas(args, value);
 
     if (info.activeWallet?.address) {
       return await mintEW(args, value, gasLimit);
     }
     await initContract(true);
     return await contract.value.write.mint(args, { value }, { gasLimit });
+  }
+
+  async function calcGas(args: Array<any>, value: bigint): Promise<bigint>{
+    try {
+      const gas = await publicClient.estimateContractGas({
+        address: contractAddress,
+        abi: nftAbi,
+        functionName: 'mint',
+        args,
+        account: walletAddress.value,
+        value,
+      });
+      return (gas * 110n) / 100n;
+    } catch (e: any) {
+      console.error(e);
+      return 250000n;
+    }
   }
 
   /**

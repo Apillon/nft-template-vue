@@ -62,11 +62,11 @@ const props = defineProps({
 const config = useRuntimeConfig();
 const { getBalance, getMaxSupply, getTotalSupply } = useContract();
 
-const totalSupply = ref<String>(props.collection.totalSupply.toString());
-const maxSupply = ref<String>(props.collection.maxSupply.toString());
 const dropStartDate = ref<Date>(new Date(Number(props.collection.dropStart) * 1000));
 const dropStartTimestamp = ref<number>(Number(props.collection.dropStart) * 1000);
 const price = ref<string>(formatEther(props.collection.price));
+const totalSupply = computed<String>(() => props.collection.totalSupply.toString());
+const maxSupply = computed<String>(() => props.collection.maxSupply.toString());
 
 const days = ref<number>(0);
 const hours = ref<number>(0);

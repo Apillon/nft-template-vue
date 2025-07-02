@@ -1,7 +1,7 @@
 <template>
   <div v-if="connected" v-bind="$attrs" class="flex items-center justify-end gap-2">
     <strong v-if="walletAddress"> ({{ shortHash(walletAddress) }}) </strong>
-    <Btn type="secondary" :loading="loading" @click="disconnectWallet()"> Disconnect </Btn>
+    <Btn type="secondary" :loading="loading" @click="disconnect()"> Disconnect </Btn>
   </div>
   <Btn v-else v-bind="$attrs" :loading="loading" round @click="openModal"> Connect wallet </Btn>
 
@@ -33,28 +33,17 @@
 
 <script lang="ts" setup>
 import { EmbeddedWallet, useWallet } from '@apillon/wallet-vue';
-import { useAccountEffect, useChains } from '@wagmi/vue';
+import { useAccount, useAccountEffect, useChains } from '@wagmi/vue';
 
 const config = useRuntimeConfig();
 const chains = useChains();
 const { wallet } = useWallet();
-const {
-  loading,
-  modalWalletVisible,
-  network,
-  connected,
-  walletAddress,
-  disconnectWallet,
-  initEmbeddedWallet,
-} = useWalletConnect();
+const { isConnected } = useAccount();
+const { loading, modalWalletVisible, network, connected, walletAddress, disconnectWallet } = useWalletConnect();
 
 useAccountEffect({
   onConnect: () => closeWallet(),
   onDisconnect: () => closeWallet(),
-});
-
-onMounted(() => {
-  initEmbeddedWallet();
 });
 
 const networks = chains.value.map(chain => ({
@@ -82,5 +71,12 @@ function closeWallet() {
     wallet.value.events.emit('open', false);
   }
   modalWalletVisible.value = false;
+}
+function disconnect() {
+  if (isConnected.value) {
+    disconnectWallet();
+  } else if (wallet.value) {
+    wallet.value.events.emit('open', true);
+  }
 }
 </script>

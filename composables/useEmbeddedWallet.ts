@@ -27,10 +27,10 @@ export default function useEmbeddedWallet() {
     const chainId = Number(network.value?.id || moonbaseAlpha.id);
 
     // Not working
-    // await write('mint', args, 'Mint');
+    // const tx = await write('mint', args, 'Mint');
 
     // Working
-    const signedTx = await wallet.value?.signPlainTransaction({
+    const signedTx = await wallet.value?.evm.signPlainTransaction({
       mustConfirm: true,
       tx: {
         to: contractAddress,
@@ -42,7 +42,7 @@ export default function useEmbeddedWallet() {
     });
 
     if (signedTx?.signedTxData) {
-      const tx = await wallet.value?.broadcastTransaction(signedTx.signedTxData, chainId);
+      const tx = await wallet.value?.evm.broadcastTransaction(signedTx.signedTxData, chainId);
       return tx?.txHash;
     }
     return null;
