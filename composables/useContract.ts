@@ -155,12 +155,12 @@ export default function useContract() {
   async function mintToken(price: bigint, amount = 1): Promise<Address | void> {
     const value = price * BigInt(amount);
     const args = [walletAddress.value, amount];
-    const gasLimit = await calcGas(args, value);
 
     if (info.activeWallet?.address) {
-      return await mintEW(args, value, gasLimit);
+      return await mintEW(args, value);
     }
     await initContract(true);
+    const gasLimit = await calcGas(args, value);
     return await contract.value.write.mint(args, { value }, { gasLimit });
   }
 
