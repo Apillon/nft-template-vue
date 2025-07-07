@@ -58,7 +58,7 @@ export default function useNft() {
       await Promise.all(promises);
     } catch (e) {
       console.error(e);
-      $toast.error('Apologies, we were unable to load NFTs metadata.');
+      $toast.error('Failed to load one or more NFTs metadata. Please try again later.');
     }
     return nfts;
   }
@@ -80,7 +80,7 @@ export default function useNft() {
       }
     } catch (e) {
       console.error(e);
-      $toast.error('Apologies, we were unable to load NFTs metadata.');
+      $toast.error(`Failed to load metadata for NFT with ID ${id}. Please try again later.`);
     }
     return null;
   }

@@ -27,7 +27,7 @@
     "vite-plugin-node-polyfills": "^0.23.0"
   },
   "dependencies": {
-    "@apillon/wallet-vue": "^2.1.2",
+    "@apillon/wallet-vue": "^3.0.3",
     "@tanstack/vue-query": "^5.75.7",
     "@wagmi/vue": "^0.1.18",
     "nuxt-icons": "^3.0.0",

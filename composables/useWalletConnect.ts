@@ -45,20 +45,7 @@ export default function useWalletConnect() {
     if (isConnected.value) {
       disconnect();
     } else if (wallet.value && info.activeWallet?.address) {
-      wallet.value?.events.emit('disconnect');
-    }
-  }
-
-  async function initEmbeddedWallet() {
-    await sleep();
-
-    if (wallet.value && config.public.EMBEDDED_WALLET_CLIENT) {
-      // wallet.value?.events.on('connect', () => {});
-      // wallet.value?.events.on('accountsChanged', async (accounts: Events['accountsChanged']) => {});
-      // wallet.value?.events.on('dataUpdated', ({ name, newValue }) => {});
-      // wallet.value?.events.on('disconnect', () => {
-      //   disconnectWallet();
-      // });
+      wallet.value?.events.emit('disconnect' as any);
     }
   }
 
@@ -70,7 +57,6 @@ export default function useWalletConnect() {
     walletAddress,
     disconnectWallet,
     ensureCorrectNetwork,
-    initEmbeddedWallet,
     sign,
   };
 }
